@@ -22,7 +22,7 @@ void printList(UserInfo userInfo[], int count);
 void setUserInfo(UserInfo userInfo[], FILE *readFile);
 int addUser(UserInfo userInfo[], int count);
 void saveInfo(UserInfo userInfo[], FILE *writeFile, int count);
-void deleteUserMain(UserInfo userInfo[], int count);
+int deleteUser(UserInfo userInfo[], int count);
 int searchUser(UserInfo userInfo[], int count, int menu);
 
 #endif

@@ -1,6 +1,6 @@
 /*
 	작성자: 141033 박수빈
-	최종 작성일: 2014.06.02
+	최종 작성일: 2014.06.03
 	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 디자인 했습니다.
 
 	 1. 문자열 입력이 필요한 부분(회원 등록 중)을 제외하고는 따로 엔터를 쳐줄 필요가 없도록 하였으며,
@@ -11,6 +11,15 @@
 		또한 입력 도중 취소하고 바로 나가고 싶을 경우를 위해 탈출 명령어도 만들어놨습니다.
 		그리고 입력을 다 한 후 맘에 안 들어서(?) 추가하고 싶지 않을 수도 있으므로 마지막에 선택 가능하게 하였습니다.
 
+
+		=== 변경 사항 (2014.06.03) ===
+
+		* 회원 명단 출력 UI 개선
+		* 회원 등록시 이름 3글자 제한에서 4글자 제한으로 확대
+		* 회원 등록시 주소 10 ~ 15글자 에서 5 ~ 15글자로 범위 확대
+		* 삭제 기능 완성
+		* 버퍼 오버플로우 방지를 위해 함수 교체 (gets -> fgets)
+		* fgets는 '\n'을 저장해버리므로 이를 제거하는 과정 추가
 
 		=== 변경 사항 (2014.06.02) ===
 
@@ -71,8 +80,11 @@ int main(void)
 				}
 				break;
 			case 3:	//삭제
-				deleteUserMain(userInfo, count);
-				
+				count = deleteUser(userInfo, count);
+				if (count < maxsize / 3){	//빈 메모리 공간이 많아지면 메모리 할당량 축소
+					maxsize /= 2;
+					userInfo = (UserInfo*)realloc(userInfo, sizeof(UserInfo)*maxsize);
+				}
 				break;
 			case 4:	//수정
 			case 5:	//검색
@@ -124,14 +136,14 @@ void printMain(int menu)
 void printList(UserInfo userInfo[], int count)
 {
 	int input, page, i, k = 1;
-	page = 1 + count / 18;
+	page = 1 + (count - 1) / 17;
 	while (1){
 		system("cls");
 		printf("List   \t\t\t\t\t\t\t\t     page %d/%d\n", k, page);
-		puts("\t회원ID\t 이름\t  연락처\t  주소");
+		puts("\n\t회원ID \t 이름   \t연락처  \t주소");
 		puts("-------------------------------------------------------------------------------");
-		for (i = 1+(k-1)*18; i <= k*18 && i <= count; i++)
-			printf("\t%d\t %s\t  %s\t  %s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
+		for (i = 1+(k-1)*17; i <= k*17 && i <= count; i++)
+			printf("\t%d \t %s   \t%s  \t%s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
 		puts("-------------------------------------------------------------------------------");
 		puts("\t 페이지 이동 :   <-    ->     \t\t 나가기:  ESC");
 		puts("-------------------------------------------------------------------------------");
@@ -183,12 +195,15 @@ int addUser(UserInfo userInfo[], int count)
 
 		//이름 입력
 		if (userInfo[count].userName[1] == 0){
-			printf("\t\t 이름\t: "); gets(userInfo[count].userName); //입력
+			printf("\t\t 이름\t: "); fgets(userInfo[count].userName, NAME_PHONE_BUFFER, stdin); //버퍼 오버플로우 방지를 위해 fgets로 받음
+			if (*(userInfo[count].userName + strlen(userInfo[count].userName) - 1) == '\n')
+				*(userInfo[count].userName + strlen(userInfo[count].userName) - 1) = '\0';
+			else while (getchar() != '\n'); //'\n'이 입력값 안에 있다면 제거하고, 없다면 초과버퍼가 남았다는 뜻이므로 버퍼 제거
 			if (strcmp(userInfo[count].userName, "esc") == 0) return --count;	//입력값이 esc이면 저장하지 않고 바로 나감
-			else if (strlen(userInfo[count].userName) < 4 || strlen(userInfo[count].userName) > 6){	//입력이 이상하면 다시 입력
+			else if (strlen(userInfo[count].userName) < 4 || strlen(userInfo[count].userName) > 8){	//입력이 이상하면 다시 입력
 				for (int i = 0; i < NAME_PHONE_BUFFER; i++) userInfo[count].userName[i] = 0;	//초기화
 				puts("\n\n\t\t 이름이 너무 길거나 짧습니다.");
-				puts("\t\t 이름은 2 ~ 3 글자만 가능합니다. \n\n\t\t [ 영문 4 ~ 6 글자 ]");
+				puts("\t\t 이름은 2 ~ 4 글자만 가능합니다. \n\n\t\t [ 영문 4 ~ 8 글자 ]");
 				while (getchar() != '\n');	//버퍼 제거 및 오류 메세지에서 정지를 위해
 				continue;
 			}
@@ -208,7 +223,10 @@ int addUser(UserInfo userInfo[], int count)
 		
 		//연락처 입력
 		if (userInfo[count].handphone[1] == 0){
-			printf("\t\t 연락처\t: "); gets(userInfo[count].handphone);
+			printf("\t\t 연락처\t: "); fgets(userInfo[count].handphone, NAME_PHONE_BUFFER, stdin);
+			if (*(userInfo[count].handphone + strlen(userInfo[count].handphone) - 1) == '\n')
+				*(userInfo[count].handphone + strlen(userInfo[count].handphone) - 1) = '\0';
+			else while (getchar() != '\n');
 			if (strcmp(userInfo[count].handphone, "esc") == 0) return --count;
 			else if (strlen(userInfo[count].handphone) < 12 || strlen(userInfo[count].handphone) > 13
 				|| userInfo[count].handphone[3] != '-' ||	// 연락처 형식 검사 ('-'을 포함했는지)
@@ -246,13 +264,16 @@ int addUser(UserInfo userInfo[], int count)
 
 		//주소 입력
 		if (userInfo[count].userAddress[1] == 0){
-			printf("\t\t 주소\t: "); gets(userInfo[count].userAddress);
+			printf("\t\t 주소\t: "); fgets(userInfo[count].userAddress, ADDRESS_BUFFER, stdin);
+			if (*(userInfo[count].userAddress + strlen(userInfo[count].userAddress) - 1) == '\n')
+				*(userInfo[count].userAddress + strlen(userInfo[count].userAddress) - 1) = '\0';
+			else while (getchar() != '\n');
 			if (strcmp(userInfo[count].userAddress, "esc") == 0) return --count;
-			else if (strlen(userInfo[count].userAddress) < 20 || strlen(userInfo[count].userAddress) > 30){
+			else if (strlen(userInfo[count].userAddress) < 10 || strlen(userInfo[count].userAddress) > 30){
 				for (int i = 0; i < ADDRESS_BUFFER; i++) userInfo[count].userAddress[i] = 0;
 				puts("\n\t\t 주소가 너무 길거나 짧습니다. ");
-				puts("\t\t 최소 10글자 이상, 그리고 15글자 이내로 입력해주세요.");
-				puts("\n\t\t [ 영문 : 20 ~ 30글자 (공백 포함) ]");
+				puts("\t\t 최소 5글자 이상, 그리고 15글자 이내로 입력해주세요.");
+				puts("\n\t\t [ 영문 : 10 ~ 30글자 (공백 포함) ]");
 				while (getchar() != '\n');
 				continue;
 			}
@@ -305,7 +326,7 @@ void saveInfo(UserInfo userInfo[], FILE *writeFile, int count)
 		else printf("잘못된 입력입니다.");
 	}
 }
-void deleteUserMain(UserInfo userInfo[], int count)
+int deleteUser(UserInfo userInfo[], int count)
 {
 	int input, menu = 1, del;
 	while (1){
@@ -338,11 +359,64 @@ void deleteUserMain(UserInfo userInfo[], int count)
 			break;
 		case 13:
 			del = searchUser(userInfo, count, menu);
-
-
+			while (del){
+				system("cls");
+				puts("Delete \n\n");
+				puts("\t\t\t        회원 정보 삭제 \n");
+				puts("-------------------------------------------------------------------------------");
+				printf("\n\n\n\t\t\t회원ID\t: %d \n\n", userInfo[del].userId);
+				printf("\t\t\t이름\t: %s \n", userInfo[del].userName);
+				printf("\t\t\t연락처\t: %s \n", userInfo[del].handphone);
+				printf("\t\t\t주소\t: %s \n", userInfo[del].userAddress);
+				puts("\n\n\n\t\t\t   정말로 삭제하시겠습니까? \n\n\n");
+				puts("-------------------------------------------------------------------------------");
+				puts("\t\t 삭제 :  ENTER     \t\t 취소:  ESC");
+				puts("-------------------------------------------------------------------------------");
+				input = getch();
+				if (input == 13){
+					if (del == count){	// 삭제 대상이 맨 마지막에 있다면, count를 하나 줄이는 것으로 끝
+						system("cls");
+						puts("Delete \n\n");
+						puts("\t\t\t        회원 정보 삭제 \n");
+						puts("-------------------------------------------------------------------------------");
+						puts("\n\n\n\n\n\t\t\t       ================");
+						puts("\t\t\t      ◎  삭제  완료  ◎");
+						puts("\t\t\t       ================ \n\n\n\n\n");
+						puts("-------------------------------------------------------------------------------");
+						puts("\t\t\t 계속하려면 아무 키나 누르세요 ");
+						puts("-------------------------------------------------------------------------------");
+						getch();
+						count--;
+						break;
+					}	
+					else{	// 나머지 경우는 한 칸씩 앞으로 덮어씌움
+						for (int i = del + 1; i <= count; i++){
+							userInfo[i - 1].userId = userInfo[i].userId;
+							strcpy(userInfo[i - 1].userName, userInfo[i].userName);
+							strcpy(userInfo[i - 1].userAddress, userInfo[i].userAddress);
+							strcpy(userInfo[i - 1].handphone, userInfo[i].handphone);
+						}
+						system("cls");
+						puts("Delete \n\n");
+						puts("\t\t\t        회원 정보 삭제 \n");
+						puts("-------------------------------------------------------------------------------");
+						puts("\n\n\n\n\n\t\t\t       ================");
+						puts("\t\t\t      ◎  삭제  완료  ◎");
+						puts("\t\t\t       ================ \n\n\n\n\n");
+						puts("-------------------------------------------------------------------------------");
+						puts("\t\t\t 계속하려면 아무 키나 누르세요 ");
+						puts("-------------------------------------------------------------------------------");
+						getch();
+						count--;
+						break;
+					}
+				}
+				else if (input == 27) break;
+				else printf("잘못된 입력입니다.");
+			}
 			break;
 		case 27:
-			return;
+			return count;
 		default:
 			printf("잘못된 입력입니다.");
 			break;
@@ -364,8 +438,11 @@ int searchUser(UserInfo userInfo[], int count, int menu)
 			puts("\n\n\t\t\t    ◎  회원ID로 검색  ◎");
 			puts("\t\t\t      ------------------");
 			if (action){
-				printf("\n\t\t\t  ID : "); scanf("%d", &id);
-				while (getchar() != '\n');	//버퍼 제거
+				printf("\n\t\t\t  ID : "); fgets(key, NAME_PHONE_BUFFER, stdin);
+				if (*(key + strlen(key) - 1) == '\n')
+					*(key + strlen(key) - 1) = '\0';
+				else while (getchar() != '\n');
+				id = atoi(key);	//scanf는 엔터값을 무시하기 때문에 fgets로 받고 정수로 변환하였음
 				for (i = 1; i <= count; i++){	//검색
 					if (userInfo[i].userId == id) break;
 				}
@@ -378,7 +455,10 @@ int searchUser(UserInfo userInfo[], int count, int menu)
 			puts("\n\n\t\t\t    ◎  이름으로 검색  ◎");
 			puts("\t\t\t      ------------------");
 			if (action){
-				printf("\n\t\t\t  이름 : "); gets(key);
+				printf("\n\t\t\t  이름 : "); fgets(key, NAME_PHONE_BUFFER, stdin);
+				if (*(key + strlen(key) - 1) == '\n')
+					*(key + strlen(key) - 1) = '\0';
+				else while (getchar() != '\n');
 				for (i = 1; i <= count; i++){
 					if (strcmp(userInfo[i].userName, key) == 0) break;
 				}
@@ -391,7 +471,10 @@ int searchUser(UserInfo userInfo[], int count, int menu)
 			puts("\n\n\t\t\t    ◎  연락처로 검색  ◎");
 			puts("\t\t\t      ------------------");
 			if (action){
-				printf("\n\t\t\t  연락처 : "); gets(key);
+				printf("\n\t\t\t  연락처 : "); fgets(key, ADDRESS_BUFFER, stdin);
+				if (*(key + strlen(key) - 1) == '\n')
+					*(key + strlen(key) - 1) = '\0';
+				else while (getchar() != '\n');
 				for (i = 1; i <= count; i++){
 					if (strcmp(userInfo[i].handphone, key) == 0) break;
 				}
