@@ -10,6 +10,7 @@
 
 #define NAME_PHONE_BUFFER 20
 #define ADDRESS_BUFFER 32
+#define OVERLAP_BUFFER 10
 
 #define UP_ARROW_KEY 72
 #define DOWN_ARROW_KEY 80
@@ -37,6 +38,7 @@ int deleteUser(UserInfo userInfo[], int count);
 int searchUser(UserInfo userInfo[], int count, int menu);
 void bottomMessage(void);
 void deleteMessage(void);
+int searchManyPrint(UserInfo userInfo[], int overlap[], int num);
 
 
 #endif

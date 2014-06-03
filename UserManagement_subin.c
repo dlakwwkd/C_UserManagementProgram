@@ -3,38 +3,36 @@
 	최종 작성일: 2014.06.03
 	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 디자인 했습니다.
 
-	 1. 문자열 입력이 필요한 부분(회원 등록 중)을 제외하고는 따로 엔터를 쳐줄 필요가 없도록 하였으며,
-		페이지 넘김, 메뉴 이동은 방향키로, 나가기는 ESC키, 확인은 엔터키를 사용할 수 있게 하였습니다.
+	1. 조작키를 방향키, ENTER키, ESC키로 통일 했습니다.
 
-	 2. 회원 등록 시 리스트에 제대로 출력될 수 있는 값 범위 안으로 입력을 제한하였습니다.
+	2. 회원 등록 시 리스트에 제대로 출력될 수 있는 값 범위 안으로 입력을 제한하였습니다.
 		(즉, 너무 길거나 짧은 입력, Tap입력 등은 사전에 방지)
-		또한 입력 도중 취소하고 바로 나가고 싶을 경우를 위해 탈출 명령어도 만들어놨습니다.
-		그리고 입력을 다 한 후 맘에 안 들어서(?) 추가하고 싶지 않을 수도 있으므로 마지막에 선택 가능하게 하였습니다.
 
 
-		=== 변경 사항 (2014.06.03)(16시) ===
+	=== 변경 사항 (2014.06.03) ===
 
-		* 입력키 값 define으로 정의 (ENTER, ESC 등)
-		* 코드 정돈 (줄 간격, 들여쓰기 등)
-		* 회원 등록 중도 취소 기능 변경 ('esc' 타이핑 -> ESC키 누르는 것으로)
-		* 검색 시 중복되는 값 필터링 기능 추가
-		* 중복되는 메시지 출력 코드 함수로 만들어 압축
+	* 입력키 값 define으로 정의 (ENTER, ESC 등)
+	* 코드 정돈 (줄 간격, 들여쓰기 등)
+	* 회원 등록 중도 취소 기능 변경 ('esc' 타이핑 -> ESC키 누르는 것으로)
+	* 중복되는 메시지 출력 코드 함수로 만들어 압축
+	* 검색 시 중복되는 값 필터링 기능 추가
+	* 회원 명단 출력 UI 개선
 
-		=== 변경 사항 (2014.06.03)(새벽) ===
+	=== 변경 사항 (2014.06.03)(새벽) ===
 
-		* 회원 명단 출력 UI 개선
-		* 회원 등록시 이름 3글자 제한에서 4글자 제한으로 확대
-		* 회원 등록시 주소 10 ~ 15글자 에서 5 ~ 15글자로 범위 확대
-		* 삭제 기능 완성
-		* 버퍼 오버플로우 방지를 위해 함수 교체 (gets -> fgets)
-		* fgets는 '\n'을 저장해버리므로 이를 제거하는 과정 추가
+	* 회원 명단 출력 UI 개선
+	* 회원 등록시 이름 3글자 제한에서 4글자 제한으로 확대
+	* 회원 등록시 주소 10 ~ 15글자 에서 5 ~ 15글자로 범위 확대
+	* 삭제 기능 완성
+	* 버퍼 오버플로우 방지를 위해 함수 교체 (gets -> fgets)
+	* fgets는 '\n'을 저장해버리므로 이를 제거하는 과정 추가
 
-		=== 변경 사항 (2014.06.02) ===
+	=== 변경 사항 (2014.06.02) ===
 
-		* 메인 화면 인터페이스 변경 ( 숫자 입력에서 화살표 입력으로 )
-		* 연락처 입력시 형식에 정확히 맞아야 입력 되도록 입력 제한 기능 강화 
-		* 검색 기능, 삭제 기능(아직 미완) 추가
-		* 몇몇 주석 수정
+	* 메인 화면 인터페이스 변경 ( 숫자 입력에서 화살표 입력으로 )
+	* 연락처 입력시 형식에 정확히 맞아야 입력 되도록 입력 제한 기능 강화 
+	* 검색 기능, 삭제 기능(아직 미완) 추가
+	* 몇몇 주석 수정
 
 */
 #include "UserManagement.h"
@@ -99,6 +97,9 @@ int main(void)
 				}
 				break;
 			case 4:	//수정
+				
+
+
 			case 5:	//검색
 				printf("아직 구현 되지 않은 기능입니다.");
 				break;
@@ -148,7 +149,7 @@ void printMain(int menu)
 	else puts("\n\t\t\t        변경 사항 저장 \n\n\n");
 
 	puts("-------------------------------------------------------------------------------");
-	puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t   종료: ESC");
+	puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t   종료 : ESC");
 	puts("-------------------------------------------------------------------------------");
 }
 
@@ -165,11 +166,16 @@ void printList(UserInfo userInfo[], int count)
 		puts("\n\t회원ID \t 이름   \t연락처  \t주소");
 		puts("-------------------------------------------------------------------------------");
 		
-		for (i = 1+(k-1)*17; i <= k*17 && i <= count; i++)
+		for (i = 1+(k-1)*17; i <= k*17 && i <= count; i++)	//리스트 출력
 			printf("\t%d \t %s   \t%s  \t%s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
 		
+		if (page == k){		//공백 채우기
+			for (i = count - (1+(k-1)*17); 16 - i > 0; i++)
+				puts(" ");
+		}
+
 		puts("-------------------------------------------------------------------------------");
-		puts("\t 페이지 이동 :   <-    ->     \t\t 나가기:  ESC");
+		puts("\t 페이지 이동 :   ←    →     \t\t 나가기 :  ESC");
 		puts("-------------------------------------------------------------------------------");
 		
 		input = getch();
@@ -407,7 +413,7 @@ int addUser(UserInfo userInfo[], int count)
 
 		puts("\n\n\n\t\t\t   정말로 등록하시겠습니까? \n\n\n\n");
 		puts("-------------------------------------------------------------------------------");
-		puts("\t\t 등록 :  ENTER     \t\t 취소:  ESC");
+		puts("\t\t 등록 :  ENTER     \t\t 취소 :  ESC");
 		puts("-------------------------------------------------------------------------------");
 		
 		input = getch();
@@ -430,7 +436,7 @@ void saveInfo(UserInfo userInfo[], FILE *writeFile, int count)
 		puts("-------------------------------------------------------------------------------");
 		puts("\n\n\n\n\n\t\t\t   정말로 저장하시겠습니까? \n\n\n\n\n");
 		puts("-------------------------------------------------------------------------------");
-		puts("\t\t 저장 :  ENTER     \t\t 취소:  ESC");
+		puts("\t\t 저장 :  ENTER     \t\t 취소 :  ESC");
 		puts("-------------------------------------------------------------------------------");
 		
 		input = getch();
@@ -473,7 +479,7 @@ int deleteUser(UserInfo userInfo[], int count)
 		else puts("\n\t\t\t        연락처로  검색 \n\n\n");
 		
 		puts("-------------------------------------------------------------------------------");
-		puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기: ESC");
+		puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC");
 		puts("-------------------------------------------------------------------------------");
 
 		input = getch();
@@ -506,7 +512,7 @@ int deleteUser(UserInfo userInfo[], int count)
 				
 				puts("\n\n\n\t\t\t   정말로 삭제하시겠습니까? \n\n\n");
 				puts("-------------------------------------------------------------------------------");
-				puts("\t\t 삭제 :  ENTER     \t\t 취소:  ESC");
+				puts("\t\t 삭제 :  ENTER     \t\t 취소 :  ESC");
 				puts("-------------------------------------------------------------------------------");
 				
 				input = getch();
@@ -545,8 +551,9 @@ int deleteUser(UserInfo userInfo[], int count)
 }
 int searchUser(UserInfo userInfo[], int count, int menu)
 {
-	int id, i, input, action = 1;
+	int id, i, input, action = 1, num;
 	char key[NAME_PHONE_BUFFER];
+	int overlap[OVERLAP_BUFFER];
 
 	while(1) {
 		system("cls");
@@ -570,15 +577,25 @@ int searchUser(UserInfo userInfo[], int count, int menu)
 				
 				id = atoi(key);	//scanf는 엔터값을 무시하기 때문에 fgets로 받고 정수로 변환하였음
 				
+				num = 0;
 				for (i = 1; i <= count; i++){	//검색
-					if (userInfo[i].userId == id) break;
+					if (num + 1 >= OVERLAP_BUFFER)
+						break;	//검색 결과가 너무 많으면 버퍼 한계치에서 끊음
+					if (userInfo[i].userId == id)
+						overlap[++num] = i;
 				}
 			}
 			else printf("\n\t\t\t  ID : %d \n", id);
 			
-			if (i > count) puts("\n\n\n\t\t\t   존재하지 않는 ID입니다! \n\n\n");
-			else return i;	//찾은 회원의 배열 위치값 리턴
+			/* 검색 결과가 1명일 때 */
+			if (num == 1) return overlap[num];
 
+			/* 검색 결과가 2명 이상일 때 */
+			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
+
+			/* 검색 결과가 없을 때 */
+			else puts("\n\n\n\t\t\t   존재하지 않는 ID입니다! \n\n\n");
+			
 			break;
 		case 2:
 			puts("\n\n\t\t\t    ◎  이름으로 검색  ◎");
@@ -591,14 +608,19 @@ int searchUser(UserInfo userInfo[], int count, int menu)
 					*(key + strlen(key) - 1) = '\0';
 				else while (getchar() != '\n');
 				
+				num = 0;
 				for (i = 1; i <= count; i++){
-					if (strcmp(userInfo[i].userName, key) == 0) break;
+					if (num + 1 >= OVERLAP_BUFFER)
+						break;
+					if (strcmp(userInfo[i].userName, key) == 0)
+						overlap[++num] = i;
 				}
 			}
 			else printf("\n\t\t\t  이름 : %s \n", key);
 			
-			if (i > count) puts("\n\n\n\t\t\t   존재하지 않는 이름입니다! \n\n\n");
-			else return i;
+			if (num == 1) return overlap[num];
+			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
+			else puts("\n\n\n\t\t\t   존재하지 않는 이름입니다! \n\n\n");
 			
 			break;
 		case 3:
@@ -612,14 +634,19 @@ int searchUser(UserInfo userInfo[], int count, int menu)
 					*(key + strlen(key) - 1) = '\0';
 				else while (getchar() != '\n');
 				
+				num = 0;
 				for (i = 1; i <= count; i++){
-					if (strcmp(userInfo[i].handphone, key) == 0) break;
+					if (num + 1 >= OVERLAP_BUFFER)
+						break;
+					if (strcmp(userInfo[i].handphone, key) == 0)
+						overlap[++num] = i;
 				}
 			}
 			else printf("\n\t\t\t  연락처 : %s \n", key);
 			
-			if (i > count) puts("\n\n\n\t\t\t   존재하지 않는 연락처입니다! \n\n\n");
-			else return i;
+			if (num == 1) return overlap[num];
+			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
+			else puts("\n\n\n\t\t\t   존재하지 않는 연락처입니다! \n\n\n");
 			
 			break;
 		}
@@ -640,7 +667,7 @@ int searchUser(UserInfo userInfo[], int count, int menu)
 void bottomMessage(void)
 {
 	puts("-------------------------------------------------------------------------------");
-	puts("\t\t다시 입력 :  ENTER   \t\t나가기:  ESC");
+	puts("\t\t다시 입력 :  ENTER   \t\t나가기 :  ESC");
 	puts("-------------------------------------------------------------------------------");
 }
 
@@ -660,3 +687,45 @@ void deleteMessage(void)
 
 	getch();	//메시지 출력을 위해 정지
 }
+
+int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
+{
+	int input;
+	
+	while (1) {
+		system("cls");
+
+		puts("Search \n");
+		puts("\t\t\t        회원 정보 검색 \n");
+		puts("-------------------------------------------------------------------------------\n");
+		puts("\t\t\t      ◎  검색 결과  ◎ \n");
+
+		for (int i = 1; i <= num; i++){
+			printf("   %2d.  %d \t %s   \t%s  \t%s\n", i,
+			userInfo[overlap[i]].userId, userInfo[overlap[i]].userName,
+			userInfo[overlap[i]].handphone, userInfo[overlap[i]].userAddress);
+			}
+
+		for (int i = 1; i < OVERLAP_BUFFER - num; i++)
+			puts(" ");	//공백 채우기
+
+		if (num + 1 == OVERLAP_BUFFER){
+			puts("\n\t\t  검색 결과가 더 있으나 여기까지만 출력됩니다. ");
+			puts("\t\t원하시는 결과가 없으면 다른 방법으로 검색해주세요.\n");
+		}
+		else puts("\n\n\n");
+
+		puts("-------------------------------------------------------------------------------");
+		puts("\t 선택 :  해당 번호 입력 \t\t     나가기 :  ESC");
+		puts("-------------------------------------------------------------------------------");
+		
+		input = getch();
+		input -= '0';	//아스키 값을 받기 때문에
+
+		if (input + '0' == ESC_KEY) return 0;
+		else if (input > 0 && input <= num) return overlap[input];
+		else printf("잘못된 입력입니다.");
+	}
+}
+
+//void modifyUser
