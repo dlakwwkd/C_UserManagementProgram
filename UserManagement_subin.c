@@ -2,6 +2,7 @@
 	작성자: 141033 박수빈
 	최종 작성일: 2014.06.05
 	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 디자인 했습니다.
+	      그리고 어떤 상황에서도 문제가 생기지 않는 안전성을 추구했습니다.
 
 	1. 조작키를 방향키, ENTER키, ESC키로 통일 했습니다.
 
@@ -10,7 +11,14 @@
 
 	3. 중복되는 코드를 최대한 만들지 않았고, 기능 별로 모듈화 하였습니다.
 
+	4. 가능한 모든 예외상황을 테스트 해보고 있습니다.
 
+
+	=== 변경 사항 (2014.06.06) ===
+
+	* 회원 등록 중 주소 입력 시 발생할 수 있는 오류 수정
+	* 회원 수정 중 탭 입력 시 발생할 수 있는 오류 수정
+	
 	=== 변경 사항 (2014.06.05) ===
 
 	* 회원 등록시 매번 maxid를 계산하는 것을 처음 한번만 하도록 수정
@@ -622,7 +630,7 @@ int dataInput(UserInfo userInfo[], int count, int switA, int switB, char *temp, 
 				for (int i = 0; i < NAME_PHONE_BUFFER; i++)
 					userInfo[count].handphone[i] = 0;
 			}
-			else{
+			else if (switD == 3){
 				for (int i = 0; i < ADDRESS_BUFFER; i++)
 					userInfo[count].userAddress[i] = 0;
 			}
@@ -647,13 +655,16 @@ int dataInput(UserInfo userInfo[], int count, int switA, int switB, char *temp, 
 				printf("\t\t\t 주소\t: ");
 				switC = ADDRESS;
 				warning = dataInputAction(warning, ADDRESS, ptrC, userInfo[count].userAddress, 10, 30);
+				if (!warning) switD = 4;
 			}
 			else if(switD >= 3) printf("\t\t\t 주소\t: %s \n", userInfo[count].userAddress);
 		}
 		else{
 			printf("\t\t\t새로운 %s : ", str);
-			switC = switB;
-			if (action)	warning = dataInputAction(warning, switB, ptrC, temp, min, max);
+			if (action){
+				switC = switB;
+				warning = dataInputAction(warning, switB, ptrC, temp, min, max);
+			}
 			else printf("%s \n", temp);
 		}
 
