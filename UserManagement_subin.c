@@ -22,6 +22,8 @@
 	* maxsize, count 전역변수로 변경하고, 전반적인 함수 간소화
 	* 함수 위치 기능별 순서에 맞게 재배치
 	* 대대적인 UI 개선 (컬러 도입)
+	* 파일에 내용이 없을 경우 생기는 오류 수정
+	* 추가적인 UI 개선
 	
 	=== 변경 사항 (2014.06.05) ===
 
@@ -150,6 +152,11 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile)
 
 	while (!feof(readFile)) {	//초기 회원수 count에 저장
 		if (fgetc(readFile) == '\n') count++;
+	}
+
+	if (count < 1){
+		puts("\n\n\n\n\n\n\n\n\n\n\n\t\t\t 데이터가 존재하지 않습니다! \n\n\n\n\n\n\n\n\n\n\n");
+		return (UserInfo*)-1;
 	}
 
 	maxsize = 2 * count;	//초기 회원수의 2배 만큼 메모리 할당
@@ -322,12 +329,12 @@ void deleteUser(UserInfo userInfo[], int del)
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		DEF_COLOR;
 
-		printf("\n\n\n\t\t\t회원ID\t: %d \n\n", userInfo[del].userId);
+		printf("\n\n\n\n\t\t\t회원ID\t: %d \n\n", userInfo[del].userId);
 		printf("\t\t\t이름\t: %s \n", userInfo[del].userName);
 		printf("\t\t\t연락처\t: %s \n", userInfo[del].handphone);
 		printf("\t\t\t주소\t: %s \n", userInfo[del].userAddress);
 
-		puts("\n\n\n\t\t\t   정말로 삭제하시겠습니까? \n\n\n\n");
+		puts("\n\n\n\t\t\t   정말로 삭제하시겠습니까? \n\n\n");
 		BOT_COLOR;
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		printf("\t\t 삭제 :  ENTER     \t\t 취소 :  ESC  \t\t\t  ");
@@ -587,7 +594,7 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 		BOT_COLOR;
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		printf("\t\t\t           검색 결과   \t\t\t\t\t ");
-		printf("\t\t\t\t\t\t\t\t\t        \n");
+		printf("\t\t\t\t\t\t\t\t\t        \n\n");
 		DEF_COLOR;
 
 		for (int i = 1; i <= num; i++){
@@ -601,9 +608,9 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 
 		if (num + 1 == OVERLAP_BUFFER){
 			puts("\n\t\t  검색 결과가 더 있으나 여기까지만 출력됩니다. ");
-			puts("\t\t원하시는 결과가 없으면 다른 방법으로 검색해주세요.\n");
+			puts("\t\t원하시는 결과가 없으면 다른 방법으로 검색해주세요.\n\n");
 		}
-		else puts("\n\n\n");
+		else puts("\n\n\n\n");
 
 		BOT_COLOR;
 		printf("\t\t\t\t\t\t\t\t\t        ");
@@ -990,7 +997,7 @@ int saveInfo(UserInfo userInfo[], FILE *writeFile)
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		DEF_COLOR;
 
-		puts("\n\n\n\n\n\t\t\t   정말로 저장하시겠습니까? \n\n\n\n\n");
+		puts("\n\n\n\n\n\n\n\n\t\t\t   정말로 저장하시겠습니까? \n\n\n\n\n\n\n");
 
 		BOT_COLOR;
 		printf("\t\t\t\t\t\t\t\t\t        ");
