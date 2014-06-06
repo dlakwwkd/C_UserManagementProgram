@@ -7,7 +7,6 @@
 #include <string.h>
 #include <conio.h>
 #include <Windows.h>
-#include <time.h>
 
 
 #define NAME_PHONE_BUFFER 20
@@ -42,7 +41,18 @@
 #define TOP_COLOR SetConsoleTextAttribute(col, 143)
 #define BOT_COLOR SetConsoleTextAttribute(col, 243)
 #define WAR_COLOR SetConsoleTextAttribute(col, 227)
-#define BOX_COLOR SetConsoleTextAttribute(col, 184)
+#define BOX_COLOR SetConsoleTextAttribute(col, 115)
+
+#define DO	524
+#define RE	588
+#define MI	660
+#define PA	698
+#define SOL	784
+#define RA	884
+#define SI	858
+#define _DO	1048
+
+#define DURATION 70
 
 
 typedef struct{
@@ -57,25 +67,27 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile);
 
 void printMain(int menu);
 void printList(UserInfo userInfo[]);
-void bottomMessage(void);
+void topMessage(char mess[], char top[]);
+void bottomMessageA(void);
+void bottomMessageB(char mess[]);
 void deleteMessage(char mess[], char top[]);
 
 void addUser(UserInfo userInfo[]);
 void deleteUser(UserInfo userInfo[], int del);
 void modifyUser(UserInfo userInfo[], int fix);
 
+void dataInputA(UserInfo userInfo[]);
+int dataInputB(UserInfo userInfo[], int switB, char *temp, int fix, char str[], int min, int max);
+int dataInputAction(int warning, int switB, int *ptrC, char *temp, int min, int max);
+void dataInputWarning(char *temp, int switA, int switB, int switC);
+
+void searchMain(UserInfo userInfo[], int todo, char mess[], char top[]);
 int searchUser(UserInfo userInfo[], int menu);
 int searchManyPrint(UserInfo userInfo[], int overlap[], int num);
-
-void searchMain(UserInfo userInfo[], int todo, char top[], char bar[]);
 void searchResult(UserInfo userInfo[], int num);
 
-int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, char str[], int min, int max);
-int dataInputAction(int warning, int switB, int *ptrC, char *temp, int min, int max);
-
 int saveInfo(UserInfo userInfo[], FILE *writeFile);
-
 int closeProgram(void);
-
+void closeGift(void);
 
 #endif
