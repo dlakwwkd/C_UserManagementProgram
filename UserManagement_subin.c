@@ -294,6 +294,7 @@ void topMessage(char mess[], char top[])
 
 void bottomMessageA(void)
 {
+	Beep(_DO, DURATION);
 	BOT_COLOR;
 	printf("\t\t\t\t\t\t\t\t\t        ");
 	printf("\t\t다시 입력 :  ENTER   \t\t나가기 :  ESC  \t\t\t  ");
@@ -584,7 +585,9 @@ void dataInputA(UserInfo userInfo[])
 			}
 			else if (input == ENTER_KEY){
 				Beep(DO, DURATION);
-				Beep(RA, DURATION);
+				Beep(MI, DURATION);
+				Beep(SOL, DURATION);
+				Beep(_DO, DURATION);
 				return;	//등록하면 count 증가한 채로 종료
 			}
 				
@@ -1011,6 +1014,9 @@ void searchResult(UserInfo userInfo[], int num)
 {
 	int input;
 
+	Beep(DO, DURATION);
+	Beep(MI, DURATION);
+	Beep(SOL, DURATION);
 	while (1){
 		topMessage("검색", "Search");
 
