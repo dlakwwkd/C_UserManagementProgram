@@ -115,10 +115,9 @@ int main(void)
 		case ESC_KEY:			//esc키
 			choice = closeProgram();
 
-			if (choice == SAVE){
-				writeFile = 0;
+			if (choice == SAVE)
 				choice = saveInfo(userInfo, writeFile);
-			}
+
 			if (choice == SAVE || choice == EXIT){
 				printf("프로그램을 종료합니다.\t");
 				free(userInfo);
