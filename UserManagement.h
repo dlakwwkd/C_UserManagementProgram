@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
+#include <Windows.h>
+#include <time.h>
 
 
 #define NAME_PHONE_BUFFER 20
@@ -28,12 +30,19 @@
 #define PHONE 3
 #define TAB 4
 
-#define DELETE 1
+#define _DELETE 1
 #define MODIFY 2
 #define SEARCH 3
 
 #define SAVE 1
 #define EXIT 2
+
+#define col GetStdHandle(STD_OUTPUT_HANDLE)
+#define DEF_COLOR SetConsoleTextAttribute(col, 63)
+#define TOP_COLOR SetConsoleTextAttribute(col, 143)
+#define BOT_COLOR SetConsoleTextAttribute(col, 243)
+#define WAR_COLOR SetConsoleTextAttribute(col, 227)
+#define BOX_COLOR SetConsoleTextAttribute(col, 184)
 
 
 typedef struct{
@@ -49,7 +58,7 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile);
 void printMain(int menu);
 void printList(UserInfo userInfo[]);
 void bottomMessage(void);
-void deleteMessage(char mess[]);
+void deleteMessage(char mess[], char top[]);
 
 void addUser(UserInfo userInfo[]);
 void deleteUser(UserInfo userInfo[], int del);

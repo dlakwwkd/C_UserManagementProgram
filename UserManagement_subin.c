@@ -21,6 +21,7 @@
 	* 데이터 파일 로드 중 띄어쓰기 있는 경우 발생하는 오류 수정
 	* maxsize, count 전역변수로 변경하고, 전반적인 함수 간소화
 	* 함수 위치 기능별 순서에 맞게 재배치
+	* 대대적인 UI 개선 (컬러 도입)
 	
 	=== 변경 사항 (2014.06.05) ===
 
@@ -65,19 +66,23 @@ static int count = -1;
 
 int main(void)
 {
+	system("mode con lines=25 cols=80");	//콘솔 창 크기 초기화
 	UserInfo *userInfo = NULL;
 	FILE *readFile = NULL;
 	FILE *writeFile = NULL;
-	int input, menu = 1, choice;
+	int input = 1, menu = 1, choice, clear = 1;
 
 	userInfo = setUserInfo(userInfo, readFile);	//구조체 배열에 파일 데이터 저장
 	if (userInfo == (UserInfo*)-1) return 0;		//오류 났을 경우 바로 종료
 
 	while(1) {
 		printMain(menu);	//메인 화면 출력
-	
-		input = getch();
-
+		
+		if (clear)
+			clear--;
+		else
+			input = getch();
+		
 		if (input == ARROW_BUFFER)	//방향키는 입력 시 아스키확장 값이 먼저 들어온 후 값이 들어옴
 			input = getch();		//그래서 이 경우 버퍼를 한번 비우도록 하였음
 		
@@ -99,7 +104,7 @@ int main(void)
 				addUser(userInfo);
 				break;
 			case 3:	//삭제
-				searchMain(userInfo, DELETE, "Delete", "삭제");
+				searchMain(userInfo, _DELETE, "Delete", "삭제");
 				break;
 			case 4:	//수정
 				searchMain(userInfo, MODIFY, "Modify", "수정");
@@ -125,7 +130,7 @@ int main(void)
 			}
 			else break;
 		default:
-			printf("잘못된 입력입니다.");
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 			break;
 		} //switch(input) out
 	}
@@ -170,9 +175,13 @@ void printMain(int menu)
 {
 	system("cls");
 
-	puts("Main ");
-	puts("\n\t\t\t      회원 관리 프로그램 \n");
-	puts("-------------------------------------------------------------------------------");
+	TOP_COLOR;
+	printf("Main \t\t\t\t\t\t\t\t\t        "); printf("\t\t\t\t\t\t\t\t\t        ");
+	BOT_COLOR;
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	printf("\t\t\t      회원 관리 프로그램\t\t\t        ");
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	DEF_COLOR;
 
 	if (menu == 1) puts("\n\n\t\t\t      [ 회원 명단 출력 ]");
 	else puts("\n\n\t\t\t        회원 명단 출력 ");
@@ -187,36 +196,41 @@ void printMain(int menu)
 	if (menu == 6) puts("\n\t\t\t      [ 변경 사항 저장 ]\n\n\n");
 	else puts("\n\t\t\t        변경 사항 저장 \n\n\n");
 
-	puts("-------------------------------------------------------------------------------");
-	puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t   종료 : ESC");
-	puts("-------------------------------------------------------------------------------");
+	BOT_COLOR;
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t   종료 : ESC \t        ");
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	DEF_COLOR;
 }
 
 void printList(UserInfo userInfo[])
 {
 	int input, page, i, k = 1;
 
-	page = 1 + (count - 1) / 17;		//전체 페이지 계산
+	page = 1 + (count - 1) / 18;		//전체 페이지 계산
 
 	while(1) {
 		system("cls");
 
-		printf("List   \t\t\t\t\t\t\t\t     page %d/%d\n", k, page);
-		puts("\n\t회원ID \t 이름   \t연락처  \t주소");
-		puts("-------------------------------------------------------------------------------");
+		TOP_COLOR;
+		printf("List   \t\t\t\t\t\t\t\t     page %d/%d   ", k, page); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t회원ID \t 이름   \t연락처  \t주소 \t\t\t\t");
+		DEF_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
 		
-		for (i = 1+(k-1)*17; i <= k*17 && i <= count; i++)	//리스트 출력
+		for (i = 1+(k-1)*18; i <= k*18 && i <= count; i++)	//리스트 출력
 			printf("\t%d \t %s   \t%s  \t%s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
 		
 		if (page == k){		//공백 채우기
-			for (i = count - (1+(k-1)*17); 16 - i > 0; i++)
+			for (i = count - (1+(k-1)*18); 17 - i > 0; i++)
 				puts(" ");
 		}
 
-		puts("-------------------------------------------------------------------------------");
-		puts("\t 페이지 이동 :   ←    →  \t\t\t 나가기 :  ESC");
-		puts("-------------------------------------------------------------------------------");
-		
+		BOT_COLOR;
+		printf("\n\t 페이지 이동 :   ←    →  \t\t\t 나가기 :  ESC \t\t");
+		DEF_COLOR;
+
 		input = getch();
 
 		if (input == ARROW_BUFFER)
@@ -233,7 +247,7 @@ void printList(UserInfo userInfo[])
 		case ESC_KEY:	//esc키
 			return;
 		default:
-			printf("잘못된 입력입니다.");
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 			break;
 		}
 	}
@@ -241,24 +255,41 @@ void printList(UserInfo userInfo[])
 
 void bottomMessage(void)
 {
-	puts("-------------------------------------------------------------------------------");
-	puts("\t\t다시 입력 :  ENTER   \t\t나가기 :  ESC");
-	puts("-------------------------------------------------------------------------------");
+	BOT_COLOR;
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	printf("\t\t다시 입력 :  ENTER   \t\t나가기 :  ESC  \t\t\t  ");
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	DEF_COLOR;
 }
 
-void deleteMessage(char mess[])
+void deleteMessage(char mess[], char top[])
 {
 	system("cls");
 
-	puts("Delete \n\n");
-	printf("\t\t\t        회원 정보 %s \n\n", mess);
-	puts("-------------------------------------------------------------------------------");
-	puts("\n\n\n\n\n\t\t\t       ================");
-	printf("\t\t\t          %s  완료  \n", mess);
-	puts("\t\t\t       ================ \n\n\n\n\n");
-	puts("-------------------------------------------------------------------------------");
-	puts("\t\t\t 계속하려면 아무 키나 누르세요 ");
-	puts("-------------------------------------------------------------------------------");
+	TOP_COLOR;
+	printf("%s \t\t\t\t\t\t\t\t\t\t ", top); printf("\t\t\t\t\t\t\t\t\t        ");
+	BOT_COLOR;
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	printf("\t\t\t        회원 정보 %s\t\t\t\t\t ", mess);
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	DEF_COLOR;
+
+	printf("\n\n\n\n\n\n\t\t\t    "); BOX_COLOR;
+	printf(" ==================== "); DEF_COLOR;
+	printf("\n\t\t\t    "); BOX_COLOR;
+	printf(" \t\t\t  "); DEF_COLOR;
+	printf("\n\t\t\t    "); BOX_COLOR;
+	printf("      %s  완료      \n", mess); DEF_COLOR;
+	printf("\t\t\t    "); BOX_COLOR;
+	printf(" \t\t\t  "); DEF_COLOR;
+	printf("\n\t\t\t    "); BOX_COLOR;
+	printf(" ==================== \n\n\n\n\n\n"); DEF_COLOR;
+
+	BOT_COLOR;
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	printf("\t\t\t 계속하려면 아무 키나 누르세요 \t\t\t\t ");
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	DEF_COLOR;
 
 	getch();	//메시지 출력을 위해 정지
 }
@@ -283,19 +314,25 @@ void deleteUser(UserInfo userInfo[], int del)
 	while (del){
 		system("cls");
 
-		puts("Delete \n\n");
-		puts("\t\t\t        회원 정보 삭제 \n");
-		puts("-------------------------------------------------------------------------------");
+		TOP_COLOR;
+		printf("Delete \t\t\t\t\t\t\t\t\t\t "); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t        회원 정보 삭제\t\t\t\t\t ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
 
 		printf("\n\n\n\t\t\t회원ID\t: %d \n\n", userInfo[del].userId);
 		printf("\t\t\t이름\t: %s \n", userInfo[del].userName);
 		printf("\t\t\t연락처\t: %s \n", userInfo[del].handphone);
 		printf("\t\t\t주소\t: %s \n", userInfo[del].userAddress);
 
-		puts("\n\n\n\t\t\t   정말로 삭제하시겠습니까? \n\n\n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\t\t 삭제 :  ENTER     \t\t 취소 :  ESC");
-		puts("-------------------------------------------------------------------------------");
+		puts("\n\n\n\t\t\t   정말로 삭제하시겠습니까? \n\n\n\n");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t 삭제 :  ENTER     \t\t 취소 :  ESC  \t\t\t  ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
 
 		input = getch();
 
@@ -307,7 +344,7 @@ void deleteUser(UserInfo userInfo[], int del)
 			}
 			/* 삭제 대상이 맨 마지막에 있다면, count를 하나 줄이는 것으로 끝 */
 			if (del == count){
-				deleteMessage("삭제");
+				deleteMessage("삭제", "Delete");
 				count--;
 				return;
 			}
@@ -319,13 +356,15 @@ void deleteUser(UserInfo userInfo[], int del)
 					strcpy(userInfo[i - 1].userAddress, userInfo[i].userAddress);
 					strcpy(userInfo[i - 1].handphone, userInfo[i].handphone);
 				}
-				deleteMessage("삭제");
+				deleteMessage("삭제", "Delete");
 				count--;
 				return;
 			}
 		}
 		else if (input == ESC_KEY) return;
-		else printf("잘못된 입력입니다.");
+		else{
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
+		}
 	}
 	return;
 }
@@ -341,22 +380,29 @@ void modifyUser(UserInfo userInfo[], int fix)
 	while (action){
 		system("cls");
 
-		puts("Modify \n\n");
-		puts("\t\t\t        회원 정보 수정 \n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\n\n\t\t\t     ◎  수정할  정보  ◎");
-		puts("\t\t\t       -----------------");
+		TOP_COLOR;
+		printf("Modify \t\t\t\t\t\t\t\t\t\t "); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t        회원 정보 수정\t\t\t\t\t ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
+
+		puts("\n\n\n\t\t\t      ◎  수정할 정보  ◎");
+		puts("\t\t\t       ================\n");
 
 		if (menu == NAME) puts("\n\t\t\t\t   [ 이름 ]");
 		else puts("\n\t\t\t\t     이름 ");
 		if (menu == ADDRESS) puts("\n\t\t\t\t   [ 주소 ]");
 		else puts("\n\t\t\t\t     주소 ");
-		if (menu == PHONE) puts("\n\t\t\t\t  [ 연락처 ]\n\n\n");
-		else puts("\n\t\t\t\t    연락처 \n\n\n");
+		if (menu == PHONE) puts("\n\t\t\t\t  [ 연락처 ]\n\n\n\n");
+		else puts("\n\t\t\t\t    연락처 \n\n\n\n");
 
-		puts("-------------------------------------------------------------------------------");
-		puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC");
-		puts("-------------------------------------------------------------------------------");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC \t        ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
 
 		input = getch();
 
@@ -378,7 +424,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 
 				if (action2){
 					strcpy(userInfo[fix].userName, temp);
-					deleteMessage("수정");
+					deleteMessage("수정", "Modify");
 				}
 				break;
 			case ADDRESS:
@@ -386,7 +432,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 
 				if (action2){
 					strcpy(userInfo[fix].userAddress, temp);
-					deleteMessage("수정");
+					deleteMessage("수정", "Modify");
 				}
 				break;
 			case PHONE:
@@ -394,7 +440,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 
 				if (action2){
 					strcpy(userInfo[fix].handphone, temp);
-					deleteMessage("수정");
+					deleteMessage("수정", "Modify");
 				}
 				break;
 			}
@@ -403,7 +449,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 			action = 0;
 			break;
 		default:
-			printf("잘못된 입력입니다.");
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 			break;
 		}
 	}
@@ -419,15 +465,19 @@ int searchUser(UserInfo userInfo[], int menu)
 	while(1) {
 		system("cls");
 
-		puts("Search \n\n");
-		puts("\t\t\t        회원 정보 검색 \n");
-		puts("-------------------------------------------------------------------------------");
+		TOP_COLOR;
+		printf("Search \t\t\t\t\t\t\t\t\t\t "); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t        회원 정보 검색\t\t\t\t\t ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
 		
 		switch (menu)
 		{
 		case 1:
-			puts("\n\n\t\t\t     ◎  회원ID로 검색  ◎");
-			puts("\t\t\t       -----------------");
+			puts("\n\n\n\t\t\t     ◎  회원ID로 검색  ◎");
+			puts("\t\t\t       =================\n");
 			
 			if (action){
 				printf("\n\t\t\t\t ID : "); fgets(key, NAME_PHONE_BUFFER, stdin);
@@ -455,12 +505,12 @@ int searchUser(UserInfo userInfo[], int menu)
 			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
 
 			/* 검색 결과가 없을 때 */
-			else puts("\n\n\n\t\t\t    존재하지 않는 ID입니다 ! \n\n\n");
+			else puts("\n\n\n\t\t\t    존재하지 않는 ID입니다 ! \n\n\n\n");
 			
 			break;
 		case 2:
-			puts("\n\n\t\t\t     ◎  이름으로 검색  ◎");
-			puts("\t\t\t       -----------------");
+			puts("\n\n\n\t\t\t     ◎  이름으로 검색  ◎");
+			puts("\t\t\t       =================\n");
 			
 			if (action){
 				printf("\n\t\t\t     이름 : "); fgets(key, NAME_PHONE_BUFFER, stdin);
@@ -481,12 +531,12 @@ int searchUser(UserInfo userInfo[], int menu)
 			
 			if (num == 1) return overlap[num];
 			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
-			else puts("\n\n\n\t\t\t   존재하지 않는 이름입니다 ! \n\n\n");
+			else puts("\n\n\n\t\t\t   존재하지 않는 이름입니다 ! \n\n\n\n");
 			
 			break;
 		case 3:
-			puts("\n\n\t\t\t     ◎  연락처로 검색  ◎");
-			puts("\t\t\t       -----------------");
+			puts("\n\n\n\t\t\t     ◎  연락처로 검색  ◎");
+			puts("\t\t\t       =================\n");
 			
 			if (action){
 				printf("\n\t\t\t연락처 : "); fgets(key, ADDRESS_BUFFER, stdin);
@@ -507,7 +557,7 @@ int searchUser(UserInfo userInfo[], int menu)
 			
 			if (num == 1) return overlap[num];
 			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
-			else puts("\n\n\n\t\t\t  존재하지 않는 연락처입니다 ! \n\n\n");
+			else puts("\n\n\n\t\t\t  존재하지 않는 연락처입니다 ! \n\n\n\n");
 			
 			break;
 		}
@@ -519,7 +569,7 @@ int searchUser(UserInfo userInfo[], int menu)
 		if (input == ENTER_KEY) action = 1;
 		else if (input == ESC_KEY) return 0;
 		else{
-			puts("잘못된 입력입니다.");
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 			action = 0;
 		}
 	}
@@ -532,16 +582,19 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 	while (1) {
 		system("cls");
 
-		puts("Search \n");
-		puts("\t\t\t        회원 정보 검색 \n");
-		puts("-------------------------------------------------------------------------------\n");
-		puts("\t\t\t      ◎  검색 결과  ◎ \n");
+		TOP_COLOR;
+		printf("Search \t\t\t\t\t\t\t\t\t\t "); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t           검색 결과   \t\t\t\t\t ");
+		printf("\t\t\t\t\t\t\t\t\t        \n");
+		DEF_COLOR;
 
 		for (int i = 1; i <= num; i++){
 			printf("   %2d.  %d \t %s   \t%s  \t%s\n", i,
-			userInfo[overlap[i]].userId, userInfo[overlap[i]].userName,
-			userInfo[overlap[i]].handphone, userInfo[overlap[i]].userAddress);
-			}
+				userInfo[overlap[i]].userId, userInfo[overlap[i]].userName,
+				userInfo[overlap[i]].handphone, userInfo[overlap[i]].userAddress);
+		}
 
 		for (int i = 1; i < OVERLAP_BUFFER - num; i++)
 			puts(" ");	//공백 채우기
@@ -552,16 +605,20 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 		}
 		else puts("\n\n\n");
 
-		puts("-------------------------------------------------------------------------------");
-		puts("\t 선택 :  해당 번호 입력 \t\t     나가기 :  ESC");
-		puts("-------------------------------------------------------------------------------");
-		
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t 선택 :  해당 번호 입력 \t\t     나가기 :  ESC \t\t    ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
+
 		input = getch();
 		input -= '0';	//아스키 값을 받기 때문에
 
 		if (input + '0' == ESC_KEY) return 0;
 		else if (input > 0 && input <= num) return overlap[input];
-		else printf("잘못된 입력입니다.");
+		else {
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
+		}
 	}
 }
 
@@ -573,22 +630,30 @@ void searchMain(UserInfo userInfo[], int todo, char top[], char bar[])
 	while (1) {
 		system("cls");
 
-		printf("%s \n\n\n", top);
-		printf("\t\t\t        회원 정보 %s \n\n", bar);
-		puts("-------------------------------------------------------------------------------");
-		puts("\n\n\t\t\t      ◎  검색  방법  ◎");
-		puts("\t\t\t       ----------------");
+		TOP_COLOR;
+		printf("%s \t\t\t\t\t\t\t\t\t\t ", top); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t        회원 정보 %s\t\t\t\t\t ", bar);
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
+
+		puts("\n\n\n\t\t\t      ◎  검색  방법  ◎");
+		puts("\t\t\t       ================\n");
 
 		if (menu == 1) puts("\n\t\t\t      [ 회원ID로  검색 ]");
 		else puts("\n\t\t\t        회원ID로  검색 ");
 		if (menu == 2) puts("\n\t\t\t      [ 이름으로  검색 ]");
 		else puts("\n\t\t\t        이름으로  검색 ");
-		if (menu == 3) puts("\n\t\t\t      [ 연락처로  검색 ]\n\n\n");
-		else puts("\n\t\t\t        연락처로  검색 \n\n\n");
+		if (menu == 3) puts("\n\t\t\t      [ 연락처로  검색 ]\n\n\n\n");
+		else puts("\n\t\t\t        연락처로  검색 \n\n\n\n");
 
-		puts("-------------------------------------------------------------------------------");
-		puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC");
-		puts("-------------------------------------------------------------------------------");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC \t        ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
+
 
 		input = getch();
 
@@ -607,7 +672,7 @@ void searchMain(UserInfo userInfo[], int todo, char top[], char bar[])
 			num = searchUser(userInfo, menu);
 
 			if (num){
-				if (todo == DELETE)
+				if (todo == _DELETE)
 					deleteUser(userInfo, num);
 				else if (todo == MODIFY)
 					modifyUser(userInfo, num);
@@ -618,7 +683,7 @@ void searchMain(UserInfo userInfo[], int todo, char top[], char bar[])
 		case ESC_KEY:
 			return;
 		default:
-			printf("잘못된 입력입니다.");
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 			break;
 		}
 	}
@@ -631,26 +696,35 @@ void searchResult(UserInfo userInfo[], int num)
 	while (1){
 		system("cls");
 
-		puts("Search \n\n");
-		puts("\t\t\t        회원 정보 검색 \n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\n\n\t\t\t      ◎  검색  결과  ◎");
-		puts("\t\t\t       ----------------");
+		TOP_COLOR;
+		printf("Search \t\t\t\t\t\t\t\t\t\t "); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t        회원 정보 검색\t\t\t\t\t ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
+
+		puts("\n\n\n\t\t\t      ◎  검색  결과  ◎");
+		puts("\t\t\t       ================\n");
 
 		printf("\n\t\t\t회원ID\t: %d \n\n", userInfo[num].userId);
 		printf("\t\t\t이름\t: %s \n", userInfo[num].userName);
 		printf("\t\t\t연락처\t: %s \n", userInfo[num].handphone);
 		printf("\t\t\t주소\t: %s \n", userInfo[num].userAddress);
 
-		puts("\n\n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\t\t\t\t 나가기 :  ESC");
-		puts("-------------------------------------------------------------------------------");
+		puts("\n\n\n");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t\t 나가기 :  ESC \t\t\t\t\t   ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
 
 		input = getch();
 
 		if (input == ESC_KEY) return;
-		else puts("잘못된 입력입니다.");
+		else {
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
+		}
 	}
 }
 
@@ -665,26 +739,36 @@ int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, ch
 		system("cls");
 
 		if (switA == INSERT){
-			puts("Register \n\n");
-			puts("\t\t\t       회원 정보 입력  \n");
-			puts("-------------------------------------------------------------------------------");
-			printf("\n\n\t\t\t 회원ID\t: %d \n\n", userInfo[count].userId);
+			TOP_COLOR;
+			printf("Register\t\t\t\t\t\t\t\t\t"); printf("\t\t\t\t\t\t\t\t\t        ");
+			BOT_COLOR;
+			printf("\t\t\t\t\t\t\t\t\t        ");
+			printf("\t\t\t        회원 정보 입력\t\t\t\t\t ");
+			printf("\t\t\t\t\t\t\t\t\t        ");
+			DEF_COLOR;
+
+			printf("\n\n\n\n\t\t\t 회원ID\t: %d \n\n", userInfo[count].userId);
 		}
 		else {
-			puts("Modify \n\n");
-			puts("\t\t\t        회원 정보 수정 \n");
-			puts("-------------------------------------------------------------------------------");
-			printf("\n\n\t\t\t      ◎  %s  수정  ◎\n", str);
-			puts("\t\t\t       ----------------");
+			TOP_COLOR;
+			printf("Modify \t\t\t\t\t\t\t\t\t\t "); printf("\t\t\t\t\t\t\t\t\t        ");
+			BOT_COLOR;
+			printf("\t\t\t\t\t\t\t\t\t        ");
+			printf("\t\t\t        회원 정보 수정\t\t\t\t\t ");
+			printf("\t\t\t\t\t\t\t\t\t        ");
+			DEF_COLOR;
+
+			printf("\n\n\n\t\t\t      ◎  %s  수정  ◎\n", str);
+			puts("\t\t\t       ================");
 			switch (switB){
 			case NAME:
-				printf("\n\t\t\t  기존 %s : %s \n", str, userInfo[fix].userName);
+				printf("\n\t\t   기존 %s : %s \n", str, userInfo[fix].userName);
 				break;
 			case ADDRESS:
-				printf("\n\t\t\t  기존 %s : %s \n", str, userInfo[fix].userAddress);	
+				printf("\n\t\t   기존 %s : %s \n", str, userInfo[fix].userAddress);	
 				break;
 			case PHONE:
-				printf("\n\t\t\t  기존 %s : %s \n", str, userInfo[fix].handphone);
+				printf("\n\t\t   기존 %s : %s \n", str, userInfo[fix].handphone);
 				break;
 			}
 		}
@@ -728,7 +812,7 @@ int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, ch
 			else if(switD >= 3) printf("\t\t\t 주소\t: %s \n", userInfo[count].userAddress);
 		}
 		else{
-			printf("\t\t\t새로운 %s : ", str);
+			printf("\t\t 새로운 %s : ", str);
 			if (action){
 				switC = switB;
 				warning = dataInputAction(warning, switB, ptrC, temp, min, max);
@@ -743,13 +827,15 @@ int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, ch
 					for (int i = 0; i < NAME_PHONE_BUFFER; i++)
 						temp[i] = 0;
 				}
-				puts("\n\n\t\t\t 이름이 너무 길거나 짧습니다.");
+				else puts(" ");
+				puts("\n\n\n\t\t\t 이름이 너무 길거나 짧습니다.");
 				puts("\t\t\t 이름은 2 ~ 4 글자만 가능합니다. \n\t\t\t [ 영문 4 ~ 8 글자 ]\n\n");
 				break;
 			case ADDRESS:
 				if (switA == UPDATE){
 					for (int i = 0; i < ADDRESS_BUFFER; i++)
 						temp[i] = 0;
+					puts(" ");
 				}
 				puts("\n\t\t  주소가 너무 길거나 짧습니다. ");
 				puts("\t\t  최소 5글자 이상, 그리고 15글자 이내로 입력해주세요.");
@@ -760,7 +846,7 @@ int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, ch
 					for (int i = 0; i < NAME_PHONE_BUFFER; i++)
 						temp[i] = 0;
 				}
-				puts("\n\t\t\t 연락처 형식에 맞지 않습니다. ");
+				puts("\n\n\t\t\t 연락처 형식에 맞지 않습니다. ");
 				puts("\t\t\t 형식에 맞게 입력해주세요. \n\n\t\t     [ 예) 010-1234-5678  or  031-123-4567 ]\n\n");
 				break;
 			case TAB:
@@ -774,7 +860,7 @@ int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, ch
 							temp[i] = 0;
 					}
 				}
-				puts("\n\n\t\t\t 탭(Tab)은 입력할 수 없습니다!\n\n\n");
+				puts("\n\n\n\t\t\t 탭(Tab)은 입력할 수 없습니다!\n\n\n");
 				break;
 			}
 			bottomMessage();
@@ -792,15 +878,18 @@ int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, ch
 				action = 1;
 			else{
 				action = 0;
-				printf("잘못된 입력입니다.");
+				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 			}
 		}
 		else{
 			if (switA == INSERT){
-				puts("\n\n\n\t\t\t   정말로 등록하시겠습니까? \n\n\n\n");
-				puts("-------------------------------------------------------------------------------");
-				puts("\t\t 등록 :  ENTER     \t\t 취소 :  ESC");
-				puts("-------------------------------------------------------------------------------");
+				puts("\n\n\n\t\t\t   정말로 등록하시겠습니까? \n\n\n");
+
+				BOT_COLOR;
+				printf("\t\t\t\t\t\t\t\t\t        ");
+				printf("\t\t 등록 :  ENTER     \t\t 취소 :  ESC \t\t\t   ");
+				printf("\t\t\t\t\t\t\t\t\t        ");
+				DEF_COLOR;
 
 				input = getch();
 
@@ -811,14 +900,17 @@ int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, ch
 				}
 				else{
 					action = 0;
-					printf("잘못된 입력입니다.");
+					WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 				}
 			}
 			else{
-				puts("\n\n\n\t\t\t   정말로 수정하시겠습니까? \n\n\n");
-				puts("-------------------------------------------------------------------------------");
-				puts("\t\t 수정 :  ENTER     \t\t 취소 :  ESC");
-				puts("-------------------------------------------------------------------------------");
+				puts("\n\n\n\t\t\t   정말로 수정하시겠습니까? \n\n\n\n");
+
+				BOT_COLOR;
+				printf("\t\t\t\t\t\t\t\t\t        ");
+				printf("\t\t 수정 :  ENTER     \t\t 취소 :  ESC \t\t\t   ");
+				printf("\t\t\t\t\t\t\t\t\t        ");
+				DEF_COLOR;
 
 				input = getch();
 
@@ -826,7 +918,7 @@ int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, ch
 				else if (input == ESC_KEY) return 0;	//취소하면 0반환
 				else{
 					action = 0;
-					printf("잘못된 입력입니다.");
+					WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 				}
 			}
 		}
@@ -890,13 +982,21 @@ int saveInfo(UserInfo userInfo[], FILE *writeFile)
 	while (1) {
 		system("cls");
 
-		puts("Save \n\n");
-		puts("\t\t\t\t변경 내용 저장  \n");
-		puts("-------------------------------------------------------------------------------");
+		TOP_COLOR;
+		printf("Save  \t\t\t\t\t\t\t\t\t\t"); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t        변경 내용 저장\t\t\t\t\t ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
+
 		puts("\n\n\n\n\n\t\t\t   정말로 저장하시겠습니까? \n\n\n\n\n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\t\t 저장 :  ENTER     \t\t 취소 :  ESC");
-		puts("-------------------------------------------------------------------------------");
+
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t 저장 :  ENTER     \t\t 취소 :  ESC \t\t\t   ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
 
 		input = getch();
 
@@ -913,10 +1013,11 @@ int saveInfo(UserInfo userInfo[], FILE *writeFile)
 		}
 
 		else if (input == ESC_KEY) return 0;
-		else printf("잘못된 입력입니다.");
+		else {
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
+		}
 	}
 }
-
 
 
 int closeProgram(void)
@@ -926,20 +1027,27 @@ int closeProgram(void)
 	while (1) {
 		system("cls");
 
-		puts("Close \n\n");
-		puts("\t\t\t\t 프로그램 종료  \n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\n\n\t\t\t   ◎  저장하시겠습니까?  ◎");
-		puts("\t\t\t       ------------------");
+		TOP_COLOR;
+		printf("Close \t\t\t\t\t\t\t\t\t\t"); printf("\t\t\t\t\t\t\t\t\t        ");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t\t\t         프로그램 종료 \t\t\t\t\t ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
+
+		puts("\n\n\n\n\t\t\t   ◎  저장하시겠습니까?  ◎");
+		puts("\t\t\t     =====================");
 
 		if (menu == 1) puts("\n\n\t\t\t       [ 저장하고 종료 ]");
 		else puts("\n\n\t\t\t         저장하고 종료 ");
-		if (menu == 2) puts("\n\t\t\t     [ 저장 안 하고 종료 ] \n\n\n\n");
-		else puts("\n\t\t\t       저장 안 하고 종료 \n\n\n\n");
+		if (menu == 2) puts("\n\t\t\t     [ 저장 안 하고 종료 ] \n\n\n\n\n");
+		else puts("\n\t\t\t       저장 안 하고 종료 \n\n\n\n\n");
 
-		puts("-------------------------------------------------------------------------------");
-		puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t  취소 : ESC");
-		puts("-------------------------------------------------------------------------------");
+		BOT_COLOR;
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t   취소 : ESC \t        ");
+		printf("\t\t\t\t\t\t\t\t\t        ");
+		DEF_COLOR;
 
 		input = getch();
 
@@ -959,14 +1067,11 @@ int closeProgram(void)
 		case ESC_KEY:
 			return 0;
 		default:
-			printf("잘못된 입력입니다.");
+			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
 			break;
 		}
 	}
 }
-
-
-
 
 
 
