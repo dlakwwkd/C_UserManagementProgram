@@ -35,6 +35,7 @@
 #define SAVE 1
 #define EXIT 2
 
+
 typedef struct{
 	int userId;
 	char userName[NAME_PHONE_BUFFER];
@@ -43,28 +44,29 @@ typedef struct{
 }UserInfo;
 
 
+UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile);
+
 void printMain(int menu);
-void printList(UserInfo userInfo[], int count);
-
-void setUserInfo(UserInfo userInfo[], FILE *readFile);
-int addUser(UserInfo userInfo[], int count);
-int saveInfo(UserInfo userInfo[], FILE *writeFile, int count);
-
-int deleteUser(UserInfo userInfo[], int count, int del);
-int searchUser(UserInfo userInfo[], int count, int menu);
-
+void printList(UserInfo userInfo[]);
 void bottomMessage(void);
 void deleteMessage(char mess[]);
 
+void addUser(UserInfo userInfo[]);
+void deleteUser(UserInfo userInfo[], int del);
+void modifyUser(UserInfo userInfo[], int fix);
+
+int searchUser(UserInfo userInfo[], int menu);
 int searchManyPrint(UserInfo userInfo[], int overlap[], int num);
-void modifyUser(UserInfo userInfo[], int count, int fix);
 
-int dataInput(UserInfo userInfo[], int count, int switA, int switB, char *temp, int fix, char str[], int min, int max);
-int dataInputAction(int warning, int switB, int *ptrC, char *temp, int min, int max);
-
-int searchMain(UserInfo userInfo[], int count, int todo, char top[], char bar[]);
+void searchMain(UserInfo userInfo[], int todo, char top[], char bar[]);
 void searchResult(UserInfo userInfo[], int num);
 
+int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, char str[], int min, int max);
+int dataInputAction(int warning, int switB, int *ptrC, char *temp, int min, int max);
+
+int saveInfo(UserInfo userInfo[], FILE *writeFile);
+
 int closeProgram(void);
+
 
 #endif

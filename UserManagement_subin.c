@@ -1,6 +1,6 @@
 /*
 	작성자: 141033 박수빈
-	최종 작성일: 2014.06.05
+	최종 작성일: 2014.06.06
 	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 디자인 했습니다.
 	      그리고 어떤 상황에서도 문제가 생기지 않는 안전성을 추구했습니다.
 
@@ -18,6 +18,9 @@
 
 	* 회원 등록 중 주소 입력 시 발생할 수 있는 오류 수정
 	* 회원 수정 중 탭 입력 시 발생할 수 있는 오류 수정
+	* 데이터 파일 로드 중 띄어쓰기 있는 경우 발생하는 오류 수정
+	* maxsize, count 전역변수로 변경하고, 전반적인 함수 간소화
+	* 함수 위치 기능별 순서에 맞게 재배치
 	
 	=== 변경 사항 (2014.06.05) ===
 
@@ -57,33 +60,18 @@
 #include "UserManagement.h"
 
 static int maxid;
+static int maxsize;
+static int count = -1;
 
 int main(void)
 {
-	UserInfo *userInfo;
-	FILE *readFile;
-	FILE *writeFile;
-	int input, maxsize, count = -1, menu = 1, choice;
+	UserInfo *userInfo = NULL;
+	FILE *readFile = NULL;
+	FILE *writeFile = NULL;
+	int input, menu = 1, choice;
 
-	readFile = fopen("data.txt", "rt");	//readFile 초기화
-	if (readFile == NULL){
-		puts("\n\n\n\n\n\n\n\n\n\n\n\t\t\t 데이터가 존재하지 않습니다! \n\n\n\n\n\n\n\n\n\n\n");
-		return -1;
-	}
-
-	while(!feof(readFile)) {	//초기 회원수 count에 저장
-		if (fgetc(readFile) == '\n') count++;
-	}
-
-	maxsize = 2 * count;	//초기 회원수의 2배 만큼 메모리 할당
-	userInfo = (UserInfo*)malloc(sizeof(UserInfo)*maxsize);
-
-	fseek(readFile, 0, SEEK_SET);		//파일 포인터 처음 위치로 귀환
-	setUserInfo(userInfo, readFile);	//구조체 배열에 파일 데이터 저장 및 readFile close
-
-	maxid = userInfo[1].userId;	//초기값 설정
-	for (int i = 2; i <= count; i++)	//가장 큰 id값 계산
-		maxid = maxid > userInfo[i].userId ? maxid : userInfo[i].userId;
+	userInfo = setUserInfo(userInfo, readFile);	//구조체 배열에 파일 데이터 저장
+	if (userInfo == (UserInfo*)-1) return 0;		//오류 났을 경우 바로 종료
 
 	while(1) {
 		printMain(menu);	//메인 화면 출력
@@ -91,54 +79,45 @@ int main(void)
 		input = getch();
 
 		if (input == ARROW_BUFFER)	//방향키는 입력 시 아스키확장 값이 먼저 들어온 후 값이 들어옴
-			input = getch();	//그래서 이 경우 버퍼를 한번 비우도록 하였음
+			input = getch();		//그래서 이 경우 버퍼를 한번 비우도록 하였음
 		
 		switch (input)
 		{
-		case UP_ARROW_KEY: //상 방향키
+		case UP_ARROW_KEY:		//상 방향키
 			if (menu > 1) menu--;
 			break;
-		case DOWN_ARROW_KEY: //하 방향키
+		case DOWN_ARROW_KEY:	//하 방향키
 			if (menu < 6) menu++;
 			break;
-		case ENTER_KEY: //enter키
+		case ENTER_KEY:			//enter키
 			switch (menu)
 			{
 			case 1:	//출력
-				printList(userInfo, count);
+				printList(userInfo);
 				break;
 			case 2:	//등록
-				count = addUser(userInfo, count);
-				if (count > maxsize - 5){	//메모리 할당량 한계치에 가까워지면 추가할당
-					maxsize *= 2;
-					userInfo = (UserInfo*)realloc(userInfo, sizeof(UserInfo)*maxsize);
-				}
+				addUser(userInfo);
 				break;
 			case 3:	//삭제
-				count =	searchMain(userInfo, count, DELETE, "Delete", "삭제");
-				if (count < maxsize / 3){	//빈 메모리 공간이 많아지면 메모리 할당량 축소
-					maxsize /= 2;
-					userInfo = (UserInfo*)realloc(userInfo, sizeof(UserInfo)*maxsize);
-				}
+				searchMain(userInfo, DELETE, "Delete", "삭제");
 				break;
 			case 4:	//수정
-				count = searchMain(userInfo, count, MODIFY, "Modify", "수정");
+				searchMain(userInfo, MODIFY, "Modify", "수정");
 				break;
 			case 5:	//검색
-				count = searchMain(userInfo, count, SEARCH, "Search", "검색");
+				searchMain(userInfo, SEARCH, "Search", "검색");
 				break;
 			case 6:	//저장
-				writeFile = 0;	// writeFile을 넘기기 위해 초기화
-				saveInfo(userInfo, writeFile, count);
+				saveInfo(userInfo, writeFile);
 				break;
 			} //switch(menu) out
 			break;
-		case ESC_KEY: //esc키
+		case ESC_KEY:			//esc키
 			choice = closeProgram();
 
 			if (choice == SAVE){
 				writeFile = 0;
-				choice = saveInfo(userInfo, writeFile, count);
+				choice = saveInfo(userInfo, writeFile);
 			}
 			if (choice == SAVE || choice == EXIT){
 				printf("프로그램을 종료합니다.\t");
@@ -153,8 +132,38 @@ int main(void)
 	}
 
 	free(userInfo);
-
 	return 0;
+}
+
+
+UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile)
+{
+	readFile = fopen("data.txt", "rt");
+	if (readFile == NULL){
+		puts("\n\n\n\n\n\n\n\n\n\n\n\t\t\t 데이터가 존재하지 않습니다! \n\n\n\n\n\n\n\n\n\n\n");
+		return (UserInfo*)-1;
+	}
+
+	while (!feof(readFile)) {	//초기 회원수 count에 저장
+		if (fgetc(readFile) == '\n') count++;
+	}
+
+	maxsize = 2 * count;	//초기 회원수의 2배 만큼 메모리 할당
+	userInfo = (UserInfo*)malloc(sizeof(UserInfo)*maxsize);
+
+	fseek(readFile, 0, SEEK_SET);		//파일 포인터 처음 위치로 귀환
+	fscanf(readFile, "%[^\n]", userInfo[0].userAddress);	//첫 문장은 따로 저장
+
+	for (int i = 1; !feof(readFile); i++)
+		fscanf(readFile, "%d\t%[^\t]\t%[^\t]\t%[^\n]\n", &userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
+
+	fclose(readFile);
+
+	maxid = userInfo[1].userId;			//초기값 설정
+	for (int i = 2; i <= count; i++)	//가장 큰 id값 계산
+		maxid = maxid > userInfo[i].userId ? maxid : userInfo[i].userId;
+
+	return userInfo;
 }
 
 
@@ -184,7 +193,7 @@ void printMain(int menu)
 	puts("-------------------------------------------------------------------------------");
 }
 
-void printList(UserInfo userInfo[], int count)
+void printList(UserInfo userInfo[])
 {
 	int input, page, i, k = 1;
 
@@ -231,58 +240,44 @@ void printList(UserInfo userInfo[], int count)
 	}
 }
 
-void setUserInfo(UserInfo userInfo[], FILE *readFile)
+void bottomMessage(void)
 {
-	fscanf(readFile, "%[^\n]", userInfo[0].userAddress);	//첫 문장은 따로 저장
-	
-	for (int i = 1; !feof(readFile); i++)
-		fscanf(readFile, "%d\t%s\t%[^\t]%s\n", &userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
-	
-	fclose(readFile);
+	puts("-------------------------------------------------------------------------------");
+	puts("\t\t다시 입력 :  ENTER   \t\t나가기 :  ESC");
+	puts("-------------------------------------------------------------------------------");
 }
 
-int addUser(UserInfo userInfo[], int count)
+void deleteMessage(char mess[])
+{
+	system("cls");
+
+	puts("Delete \n\n");
+	printf("\t\t\t        회원 정보 %s \n\n", mess);
+	puts("-------------------------------------------------------------------------------");
+	puts("\n\n\n\n\n\t\t\t       ================");
+	printf("\t\t\t          %s  완료  \n", mess);
+	puts("\t\t\t       ================ \n\n\n\n\n");
+	puts("-------------------------------------------------------------------------------");
+	puts("\t\t\t 계속하려면 아무 키나 누르세요 ");
+	puts("-------------------------------------------------------------------------------");
+
+	getch();	//메시지 출력을 위해 정지
+}
+
+
+void addUser(UserInfo userInfo[])
 {
 	userInfo[++count].userId = ++maxid;	//count값 1증가 시키고 새로운 id 부여
 	
-	return dataInput(userInfo, count, INSERT, 0, (char*)0, 0, (char*)0, 0, 0);
-}
-
-int saveInfo(UserInfo userInfo[], FILE *writeFile, int count)
-{
-	int input;
-
-	while(1) {
-		system("cls");
-
-		puts("Save \n\n");
-		puts("\t\t\t\t변경 내용 저장  \n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\n\n\n\n\n\t\t\t   정말로 저장하시겠습니까? \n\n\n\n\n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\t\t 저장 :  ENTER     \t\t 취소 :  ESC");
-		puts("-------------------------------------------------------------------------------");
-		
-		input = getch();
-
-		if (input == ENTER_KEY){
-			writeFile = fopen("data.txt", "wt");	//writeFile open
-			
-			fprintf(writeFile, "%s\n", userInfo[0].userAddress);
-			
-			for (int i = 1; i <= count; i++)
-				fprintf(writeFile, "%d\t%s\t%s\t%s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
-			
-			fclose(writeFile);		//writeFile close
-			return SAVE;
-		}
-
-		else if (input == ESC_KEY) return 0;
-		else printf("잘못된 입력입니다.");
+	if (count > maxsize - 5){	//메모리 할당량 한계치에 가까워지면 추가할당
+		maxsize *= 2;
+		userInfo = (UserInfo*)realloc(userInfo, sizeof(UserInfo)*maxsize);
 	}
+
+	dataInput(userInfo, INSERT, 0, (char*)0, 0, (char*)0, 0, 0);
 }
 
-int deleteUser(UserInfo userInfo[], int count, int del)
+void deleteUser(UserInfo userInfo[], int del)
 {
 	int input, menu = 1;
 
@@ -306,10 +301,16 @@ int deleteUser(UserInfo userInfo[], int count, int del)
 		input = getch();
 
 		if (input == ENTER_KEY){
+			/* 빈 메모리 공간이 많아지면 메모리 할당량 축소 */
+			if (count < maxsize / 3){
+				maxsize /= 2;
+				userInfo = (UserInfo*)realloc(userInfo, sizeof(UserInfo)*maxsize);
+			}
 			/* 삭제 대상이 맨 마지막에 있다면, count를 하나 줄이는 것으로 끝 */
 			if (del == count){
 				deleteMessage("삭제");
-				return --count;
+				count--;
+				return;
 			}
 			/* 나머지 경우는 한 칸씩 앞으로 덮어씌움 */
 			else{
@@ -320,16 +321,97 @@ int deleteUser(UserInfo userInfo[], int count, int del)
 					strcpy(userInfo[i - 1].handphone, userInfo[i].handphone);
 				}
 				deleteMessage("삭제");
-				return --count;
+				count--;
+				return;
 			}
 		}
-		else if (input == ESC_KEY) return count;
+		else if (input == ESC_KEY) return;
 		else printf("잘못된 입력입니다.");
 	}
-	return count;
+	return;
 }
 
-int searchUser(UserInfo userInfo[], int count, int menu)
+void modifyUser(UserInfo userInfo[], int fix)
+{
+	int input, menu = 1, action, action2;
+	char temp[ADDRESS_BUFFER];
+	char *ptr;
+	ptr = temp;
+	action = 1;
+
+	while (action){
+		system("cls");
+
+		puts("Modify \n\n");
+		puts("\t\t\t        회원 정보 수정 \n");
+		puts("-------------------------------------------------------------------------------");
+		puts("\n\n\t\t\t     ◎  수정할  정보  ◎");
+		puts("\t\t\t       -----------------");
+
+		if (menu == NAME) puts("\n\t\t\t\t   [ 이름 ]");
+		else puts("\n\t\t\t\t     이름 ");
+		if (menu == ADDRESS) puts("\n\t\t\t\t   [ 주소 ]");
+		else puts("\n\t\t\t\t     주소 ");
+		if (menu == PHONE) puts("\n\t\t\t\t  [ 연락처 ]\n\n\n");
+		else puts("\n\t\t\t\t    연락처 \n\n\n");
+
+		puts("-------------------------------------------------------------------------------");
+		puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC");
+		puts("-------------------------------------------------------------------------------");
+
+		input = getch();
+
+		if (input == ARROW_BUFFER)
+			input = getch();
+
+		switch (input)
+		{
+		case UP_ARROW_KEY:
+			if (menu > 1) menu--;
+			break;
+		case DOWN_ARROW_KEY:
+			if (menu < 3) menu++;
+			break;
+		case ENTER_KEY:
+			switch (menu){
+			case NAME:
+				action2 = dataInput(userInfo, UPDATE, NAME, ptr, fix, "이름", 4, 8);
+
+				if (action2){
+					strcpy(userInfo[fix].userName, temp);
+					deleteMessage("수정");
+				}
+				break;
+			case ADDRESS:
+				action2 = dataInput(userInfo, UPDATE, ADDRESS, ptr, fix, "주소", 10, 30);
+
+				if (action2){
+					strcpy(userInfo[fix].userAddress, temp);
+					deleteMessage("수정");
+				}
+				break;
+			case PHONE:
+				action2 = dataInput(userInfo, UPDATE, PHONE, ptr, fix, "연락처", 12, 13);
+
+				if (action2){
+					strcpy(userInfo[fix].handphone, temp);
+					deleteMessage("수정");
+				}
+				break;
+			}
+			break;
+		case ESC_KEY:
+			action = 0;
+			break;
+		default:
+			printf("잘못된 입력입니다.");
+			break;
+		}
+	}
+}
+
+
+int searchUser(UserInfo userInfo[], int menu)
 {
 	int id, i, input, action = 1, num;
 	char key[NAME_PHONE_BUFFER];
@@ -444,30 +526,6 @@ int searchUser(UserInfo userInfo[], int count, int menu)
 	}
 }
 
-void bottomMessage(void)
-{
-	puts("-------------------------------------------------------------------------------");
-	puts("\t\t다시 입력 :  ENTER   \t\t나가기 :  ESC");
-	puts("-------------------------------------------------------------------------------");
-}
-
-void deleteMessage(char mess[])
-{
-	system("cls");
-
-	puts("Delete \n\n");
-	printf("\t\t\t        회원 정보 %s \n\n", mess);
-	puts("-------------------------------------------------------------------------------");
-	puts("\n\n\n\n\n\t\t\t       ================");
-	printf("\t\t\t          %s  완료  \n", mess);
-	puts("\t\t\t       ================ \n\n\n\n\n");
-	puts("-------------------------------------------------------------------------------");
-	puts("\t\t\t 계속하려면 아무 키나 누르세요 ");
-	puts("-------------------------------------------------------------------------------");
-
-	getch();	//메시지 출력을 위해 정지
-}
-
 int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 {
 	int input;
@@ -508,29 +566,26 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 	}
 }
 
-void modifyUser(UserInfo userInfo[], int count, int fix)
+
+void searchMain(UserInfo userInfo[], int todo, char top[], char bar[])
 {
-	int input, menu = 1, action, action2;
-	char temp[ADDRESS_BUFFER];
-	char *ptr;
-	ptr = temp;
-	action = 1;
-	
-	while (action){
+	int input, menu = 1, num;
+
+	while (1) {
 		system("cls");
 
-		puts("Modify \n\n");
-		puts("\t\t\t        회원 정보 수정 \n");
+		printf("%s \n\n\n", top);
+		printf("\t\t\t        회원 정보 %s \n\n", bar);
 		puts("-------------------------------------------------------------------------------");
-		puts("\n\n\t\t\t     ◎  수정할  정보  ◎");
-		puts("\t\t\t       -----------------");
+		puts("\n\n\t\t\t      ◎  검색  방법  ◎");
+		puts("\t\t\t       ----------------");
 
-		if (menu == NAME) puts("\n\t\t\t\t   [ 이름 ]");
-		else puts("\n\t\t\t\t     이름 ");
-		if (menu == ADDRESS) puts("\n\t\t\t\t   [ 주소 ]");
-		else puts("\n\t\t\t\t     주소 ");
-		if (menu == PHONE) puts("\n\t\t\t\t  [ 연락처 ]\n\n\n");
-		else puts("\n\t\t\t\t    연락처 \n\n\n");
+		if (menu == 1) puts("\n\t\t\t      [ 회원ID로  검색 ]");
+		else puts("\n\t\t\t        회원ID로  검색 ");
+		if (menu == 2) puts("\n\t\t\t      [ 이름으로  검색 ]");
+		else puts("\n\t\t\t        이름으로  검색 ");
+		if (menu == 3) puts("\n\t\t\t      [ 연락처로  검색 ]\n\n\n");
+		else puts("\n\t\t\t        연락처로  검색 \n\n\n");
 
 		puts("-------------------------------------------------------------------------------");
 		puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC");
@@ -550,36 +605,19 @@ void modifyUser(UserInfo userInfo[], int count, int fix)
 			if (menu < 3) menu++;
 			break;
 		case ENTER_KEY:
-			switch (menu){
-			case NAME:
-				action2 = dataInput(userInfo, count, UPDATE, NAME, ptr, fix, "이름", 4, 8);
+			num = searchUser(userInfo, menu);
 
-				if (action2){
-					strcpy(userInfo[fix].userName, temp);
-					deleteMessage("수정");
-				}
-				break;
-			case ADDRESS:
-				action2 = dataInput(userInfo, count, UPDATE, ADDRESS, ptr, fix, "주소", 10, 30);
-
-				if (action2){
-					strcpy(userInfo[fix].userAddress, temp);
-					deleteMessage("수정");
-				}
-				break;
-			case PHONE:
-				action2 = dataInput(userInfo, count, UPDATE, PHONE, ptr, fix, "연락처", 12, 13);
-
-				if (action2){
-					strcpy(userInfo[fix].handphone, temp);
-					deleteMessage("수정");
-				}
-				break;
+			if (num){
+				if (todo == DELETE)
+					deleteUser(userInfo, num);
+				else if (todo == MODIFY)
+					modifyUser(userInfo, num);
+				else
+					searchResult(userInfo, num);
 			}
 			break;
 		case ESC_KEY:
-			action = 0;
-			break;
+			return;
 		default:
 			printf("잘못된 입력입니다.");
 			break;
@@ -587,7 +625,38 @@ void modifyUser(UserInfo userInfo[], int count, int fix)
 	}
 }
 
-int dataInput(UserInfo userInfo[], int count, int switA, int switB, char *temp, int fix, char str[], int min, int max)
+void searchResult(UserInfo userInfo[], int num)
+{
+	int input;
+
+	while (1){
+		system("cls");
+
+		puts("Search \n\n");
+		puts("\t\t\t        회원 정보 검색 \n");
+		puts("-------------------------------------------------------------------------------");
+		puts("\n\n\t\t\t      ◎  검색  결과  ◎");
+		puts("\t\t\t       ----------------");
+
+		printf("\n\t\t\t회원ID\t: %d \n\n", userInfo[num].userId);
+		printf("\t\t\t이름\t: %s \n", userInfo[num].userName);
+		printf("\t\t\t연락처\t: %s \n", userInfo[num].handphone);
+		printf("\t\t\t주소\t: %s \n", userInfo[num].userAddress);
+
+		puts("\n\n");
+		puts("-------------------------------------------------------------------------------");
+		puts("\t\t\t\t 나가기 :  ESC");
+		puts("-------------------------------------------------------------------------------");
+
+		input = getch();
+
+		if (input == ESC_KEY) return;
+		else puts("잘못된 입력입니다.");
+	}
+}
+
+
+int dataInput(UserInfo userInfo[], int switA, int switB, char *temp, int fix, char str[], int min, int max)
 {
 	int input, warning = 0, action = 1, switC = 1, switD = 1;
 	int *ptrC;
@@ -715,8 +784,8 @@ int dataInput(UserInfo userInfo[], int count, int switA, int switB, char *temp, 
 
 			if (input == ESC_KEY){
 				if (switA == INSERT){
-					maxid--;		//등록 중일땐 취소시 maxid와 count 원위치
-					return --count;
+					maxid--;	 count--;	//등록 중일땐 취소시 maxid와 count 원위치
+					return 0;
 				}
 				else return 0;	//수정 중일땐 취소시 0을 리턴 
 			}
@@ -736,10 +805,10 @@ int dataInput(UserInfo userInfo[], int count, int switA, int switB, char *temp, 
 
 				input = getch();
 
-				if (input == ENTER_KEY) return count;	//등록하면 증가한 count 반환
-				else if (input == ESC_KEY){		//등록하지 않으면 원래의 count 반환
-					maxid--;
-					return --count;
+				if (input == ENTER_KEY) return 0;	//등록하면 count 증가한 채로 종료
+				else if (input == ESC_KEY){		//등록하지 않으면 count 원래대로 되돌려 놓고 종료
+					maxid--; count--;
+					return 0;
 				}
 				else{
 					action = 0;
@@ -814,93 +883,42 @@ int dataInputAction(int warning, int switB, int *ptrC, char *temp, int min, int 
 	return warning;
 }
 
-int searchMain(UserInfo userInfo[], int count, int todo, char top[], char bar[])
+
+int saveInfo(UserInfo userInfo[], FILE *writeFile)
 {
-	int input, menu = 1, num;
+	int input;
 
 	while (1) {
 		system("cls");
 
-		printf("%s \n\n\n", top);
-		printf("\t\t\t        회원 정보 %s \n\n", bar);
+		puts("Save \n\n");
+		puts("\t\t\t\t변경 내용 저장  \n");
 		puts("-------------------------------------------------------------------------------");
-		puts("\n\n\t\t\t      ◎  검색  방법  ◎");
-		puts("\t\t\t       ----------------");
-
-		if (menu == 1) puts("\n\t\t\t      [ 회원ID로  검색 ]");
-		else puts("\n\t\t\t        회원ID로  검색 ");
-		if (menu == 2) puts("\n\t\t\t      [ 이름으로  검색 ]");
-		else puts("\n\t\t\t        이름으로  검색 ");
-		if (menu == 3) puts("\n\t\t\t      [ 연락처로  검색 ]\n\n\n");
-		else puts("\n\t\t\t        연락처로  검색 \n\n\n");
-
+		puts("\n\n\n\n\n\t\t\t   정말로 저장하시겠습니까? \n\n\n\n\n");
 		puts("-------------------------------------------------------------------------------");
-		puts("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC");
+		puts("\t\t 저장 :  ENTER     \t\t 취소 :  ESC");
 		puts("-------------------------------------------------------------------------------");
 
 		input = getch();
 
-		if (input == ARROW_BUFFER)
-			input = getch();
+		if (input == ENTER_KEY){
+			writeFile = fopen("data.txt", "wt");	//writeFile open
 
-		switch (input)
-		{
-		case UP_ARROW_KEY:
-			if (menu > 1) menu--;
-			break;
-		case DOWN_ARROW_KEY:
-			if (menu < 3) menu++;
-			break;
-		case ENTER_KEY:
-			num = searchUser(userInfo, count, menu);
-			
-			if (num){
-				if (todo == DELETE)
-					count = deleteUser(userInfo, count, num);
-				else if (todo == MODIFY)
-					modifyUser(userInfo, count, num);
-				else
-					searchResult(userInfo, num);
-			}
-			break;
-		case ESC_KEY:
-			return count;
-		default:
-			printf("잘못된 입력입니다.");
-			break;
+			fprintf(writeFile, "%s\n", userInfo[0].userAddress);
+
+			for (int i = 1; i <= count; i++)
+				fprintf(writeFile, "%d\t%s\t%s\t%s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
+
+			fclose(writeFile);		//writeFile close
+			return SAVE;
 		}
+
+		else if (input == ESC_KEY) return 0;
+		else printf("잘못된 입력입니다.");
 	}
 }
 
-void searchResult(UserInfo userInfo[], int num)
-{
-	int input;
 
-	while (1){
-		system("cls");
-
-		puts("Search \n\n");
-		puts("\t\t\t        회원 정보 검색 \n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\n\n\t\t\t      ◎  검색  결과  ◎");
-		puts("\t\t\t       ----------------");
-
-		printf("\n\t\t\t회원ID\t: %d \n\n", userInfo[num].userId);
-		printf("\t\t\t이름\t: %s \n", userInfo[num].userName);
-		printf("\t\t\t연락처\t: %s \n", userInfo[num].handphone);
-		printf("\t\t\t주소\t: %s \n", userInfo[num].userAddress);
-
-		puts("\n\n");
-		puts("-------------------------------------------------------------------------------");
-		puts("\t\t\t\t 나가기 :  ESC");
-		puts("-------------------------------------------------------------------------------");
-
-		input = getch();
-
-		if (input == ESC_KEY) return;
-		else puts("잘못된 입력입니다.");
-	}
-}
 
 int closeProgram(void)
 {
