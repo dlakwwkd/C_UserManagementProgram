@@ -239,7 +239,8 @@ void printList(UserInfo userInfo[])
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		
 		for (i = 1+(k-1)*18; i <= k*18 && i <= count; i++)	//리스트 출력
-			printf("\t%d \t %s   \t%s  \t%s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
+			printf("\t%d \t %s   \t%s  \t%s\n",
+			userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
 		
 		if (page == k){	//공백 채우기
 			for (i = count - (1+(k-1)*18); 17 - i > 0; i++)
@@ -848,7 +849,7 @@ int searchUser(UserInfo userInfo[], int menu)
 			messageBoxA("회원 ID로 검색");
 
 			if (action){
-				printf("\n\t\t\t\t ID : "); fgets(key, NAME_PHONE_BUFFER, stdin);
+				printf("\n\n\t\t\t\t ID : "); fgets(key, NAME_PHONE_BUFFER, stdin);
 
 				if (*(key + strlen(key) - 1) == '\n')
 					*(key + strlen(key) - 1) = '\0';
@@ -864,7 +865,7 @@ int searchUser(UserInfo userInfo[], int menu)
 						overlap[++num] = i;
 				}
 			}
-			else printf("\n\t\t\t\t ID : %d \n", id);
+			else printf("\n\n\t\t\t\t ID : %d \n", id);
 
 			/* 검색 결과가 1명일 때 */
 			if (num == 1) return overlap[num];
@@ -873,13 +874,13 @@ int searchUser(UserInfo userInfo[], int menu)
 			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
 
 			/* 검색 결과가 없을 때 */
-			else puts("\n\n\n\t\t\t    존재하지 않는 ID입니다 ! \n\n\n\n");
+			else puts("\n\n\n\t\t\t    존재하지 않는 ID입니다 ! \n\n\n");
 			break;
 		case 2:
 			messageBoxA("이름으로  검색");
 
 			if (action){
-				printf("\n\t\t\t     이름 : "); fgets(key, NAME_PHONE_BUFFER, stdin);
+				printf("\n\n\t\t\t     이름 : "); fgets(key, NAME_PHONE_BUFFER, stdin);
 
 				if (*(key + strlen(key) - 1) == '\n')
 					*(key + strlen(key) - 1) = '\0';
@@ -893,17 +894,17 @@ int searchUser(UserInfo userInfo[], int menu)
 						overlap[++num] = i;
 				}
 			}
-			else printf("\n\t\t\t     이름 : %s \n", key);
+			else printf("\n\n\t\t\t     이름 : %s \n", key);
 
 			if (num == 1) return overlap[num];
 			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
-			else puts("\n\n\n\t\t\t   존재하지 않는 이름입니다 ! \n\n\n\n");
+			else puts("\n\n\n\t\t\t   존재하지 않는 이름입니다 ! \n\n\n");
 			break;
 		case 3:
 			messageBoxA("연락처로  검색");
 
 			if (action){
-				printf("\n\t\t\t연락처 : "); fgets(key, ADDRESS_BUFFER, stdin);
+				printf("\n\n\t\t\t연락처 : "); fgets(key, ADDRESS_BUFFER, stdin);
 
 				if (*(key + strlen(key) - 1) == '\n')
 					*(key + strlen(key) - 1) = '\0';
@@ -917,11 +918,11 @@ int searchUser(UserInfo userInfo[], int menu)
 						overlap[++num] = i;
 				}
 			}
-			else printf("\n\t\t\t연락처 : %s \n", key);
+			else printf("\n\n\t\t\t연락처 : %s \n", key);
 
 			if (num == 1) return overlap[num];
 			else if (num > 1) return searchManyPrint(userInfo, overlap, num);
-			else puts("\n\n\n\t\t\t  존재하지 않는 연락처입니다 ! \n\n\n\n");
+			else puts("\n\n\n\t\t\t  존재하지 않는 연락처입니다 ! \n\n\n");
 			break;
 		}
 
@@ -1006,12 +1007,12 @@ void searchResult(UserInfo userInfo[], int num)
 		topMessage("검색", "Search");
 		messageBoxB("검색  ", "결과");
 
-		printf("\n\t\t\t회원ID\t: %d \n\n", userInfo[num].userId);
+		printf("\n\n\t\t\t회원ID\t: %d \n\n", userInfo[num].userId);
 		printf("\t\t\t이름\t: %s \n", userInfo[num].userName);
 		printf("\t\t\t연락처\t: %s \n", userInfo[num].handphone);
 		printf("\t\t\t주소\t: %s \n", userInfo[num].userAddress);
 
-		puts("\n\n\n");
+		puts("\n\n");
 		BOT_COLOR;
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		printf("\t\t\t\t 나가기 :  ESC \t\t\t\t\t   ");
@@ -1059,7 +1060,8 @@ int saveInfo(UserInfo userInfo[], FILE *writeFile)
 			fprintf(writeFile, "%s\n", userInfo[0].userAddress);
 
 			for (int i = 1; i <= count; i++)
-				fprintf(writeFile, "%d\t%s\t%s\t%s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
+				fprintf(writeFile, "%d\t%s\t%s\t%s\n",
+				userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
 
 			fclose(writeFile);		//writeFile close
 			return SAVE;
@@ -1091,7 +1093,7 @@ int closeProgram(void)
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		DEF_COLOR;
 
-		printf("\n\n\n\t\t\t    "); BOX_COLOR;
+		printf("\n\n\n\n\t\t\t    "); BOX_COLOR;
 		printf("┌──────────┐"); DEF_COLOR;
 		printf("\n\t\t\t    "); BOX_COLOR;
 		printf("│ 저장하시겠습니까 ? │\n"); DEF_COLOR;
@@ -1100,8 +1102,8 @@ int closeProgram(void)
 
 		if (menu == 1) puts("\n\n\t\t\t        [ 저장 후 종료 ]");
 		else puts("\n\n\t\t\t          저장 후 종료 ");
-		if (menu == 2) puts("\n\t\t\t     [ 저장하지 않고 종료 ] \n\n\n\n\n");
-		else puts("\n\t\t\t       저장하지 않고 종료 \n\n\n\n\n");
+		if (menu == 2) puts("\n\t\t\t     [ 저장하지 않고 종료 ] \n\n\n\n");
+		else puts("\n\t\t\t       저장하지 않고 종료 \n\n\n\n");
 
 		BOT_COLOR;
 		printf("\t\t\t\t\t\t\t\t\t        ");
