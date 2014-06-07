@@ -18,6 +18,7 @@
 * 중복되는 UI 분리 (topMessage, bottomMessageA, bottomMessageB)
 * 주석 추가
 * 사운드 추가
+* UI 색상 조금 변경
 
 === 변경 사항 (2014.06.06) ===
 

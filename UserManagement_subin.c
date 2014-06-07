@@ -19,6 +19,7 @@
 	* 중복되는 UI 분리 (topMessage, bottomMessageA, bottomMessageB)
 	* 주석 추가
 	* 사운드 추가
+	* UI 색상 조금 변경
 
 	=== 변경 사항 (2014.06.06) ===
 
@@ -68,8 +69,8 @@
 */
 #include "UserManagement.h"
 
-static int maxid;		//가장 큰 ID 값
-static int maxsize;		//메모리 할당 사이즈
+static int maxid;	//가장 큰 ID 값
+static int maxsize;	//메모리 할당 사이즈
 static int count = -1;	//전체 회원 수
 
 int main(void)
@@ -81,7 +82,7 @@ int main(void)
 	int input = 1, menu = 1, choice, clear = 1;
 
 	userInfo = setUserInfo(userInfo, readFile);	//구조체 배열에 파일 데이터 저장
-	if (userInfo == (UserInfo*)-1) return 0;		//오류 났을 경우 바로 종료
+	if (userInfo == (UserInfo*)-1) return 0;	//오류 났을 경우 바로 종료
 
 	while(1) {
 		printMain(menu);	//메인 화면 출력
@@ -91,11 +92,11 @@ int main(void)
 		else input = getch();
 		
 		if (input == ARROW_BUFFER)	//방향키는 입력 시 아스키확장 값이 먼저 들어온 후 값이 들어옴
-			input = getch();		//그래서 이 경우 버퍼를 한번 비우도록 하였음
+			input = getch();	//그래서 이 경우 버퍼를 한번 비우도록 하였음
 		
 		switch (input)
 		{
-		case UP_ARROW_KEY:		//상 방향키
+		case UP_ARROW_KEY:	//상 방향키
 			if (menu > 1) menu--;
 			Beep(MI, DURATION);
 			break;
@@ -103,7 +104,7 @@ int main(void)
 			if (menu < 6) menu++;
 			Beep(MI, DURATION);
 			break;
-		case ENTER_KEY:			//enter키
+		case ENTER_KEY:		//enter키
 			Beep(DO, DURATION);
 			Beep(RA, DURATION);
 			switch (menu)
@@ -128,7 +129,7 @@ int main(void)
 				break;
 			} //switch(menu) out
 			break;
-		case ESC_KEY:			//esc키
+		case ESC_KEY:		//esc키
 			Beep(DO, DURATION);
 			Beep(RA, DURATION);
 			choice = closeProgram();
@@ -157,7 +158,7 @@ int main(void)
 
 UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile)
 {
-	readFile = fopen("data.txt", "rt");
+	readFile = fopen("data.txt", "rt");	//readFile open
 	if (readFile == NULL){
 		puts("\n\n\n\n\n\n\n\n\n\n\n\t\t\t 데이터가 존재하지 않습니다! \n\n\n\n\n\n\n\n\n\n\n");
 		return (UserInfo*)-1;
@@ -175,15 +176,15 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile)
 	maxsize = 2 * count;	//초기 회원수의 2배 만큼 메모리 할당
 	userInfo = (UserInfo*)malloc(sizeof(UserInfo)*maxsize);
 
-	fseek(readFile, 0, SEEK_SET);		//파일 포인터 처음 위치로 귀환
+	fseek(readFile, 0, SEEK_SET);	//파일 포인터 처음 위치로 귀환
 	fscanf(readFile, "%[^\n]", userInfo[0].userAddress);	//첫 문장은 따로 저장
 
 	for (int i = 1; !feof(readFile); i++)
 		fscanf(readFile, "%d\t%[^\t]\t%[^\t]\t%[^\n]\n", &userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
 
-	fclose(readFile);
+	fclose(readFile);	//readFile close
 
-	maxid = userInfo[1].userId;			//초기값 설정
+	maxid = userInfo[1].userId;		//초기값 설정
 	for (int i = 2; i <= count; i++)	//가장 큰 id값 계산
 		maxid = maxid > userInfo[i].userId ? maxid : userInfo[i].userId;
 
@@ -227,7 +228,7 @@ void printList(UserInfo userInfo[])
 {
 	int input, page, i, k = 1;
 
-	page = 1 + (count - 1) / 18;		//전체 페이지 계산
+	page = 1 + (count - 1) / 18;	//전체 페이지 계산
 
 	while(1) {
 		system("cls");
@@ -242,7 +243,7 @@ void printList(UserInfo userInfo[])
 		for (i = 1+(k-1)*18; i <= k*18 && i <= count; i++)	//리스트 출력
 			printf("\t%d \t %s   \t%s  \t%s\n", userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
 		
-		if (page == k){		//공백 채우기
+		if (page == k){	//공백 채우기
 			for (i = count - (1+(k-1)*18); 17 - i > 0; i++)
 				puts(" ");
 		}
@@ -266,7 +267,7 @@ void printList(UserInfo userInfo[])
 			Beep(MI, DURATION);
 			if (k != page) k++;
 			break;
-		case ESC_KEY:	//esc키
+		case ESC_KEY:		//esc키
 			Beep(RA, DURATION);
 			Beep(DO, DURATION);
 			return;

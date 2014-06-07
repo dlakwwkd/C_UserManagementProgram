@@ -38,9 +38,9 @@
 
 #define col GetStdHandle(STD_OUTPUT_HANDLE)
 #define DEF_COLOR SetConsoleTextAttribute(col, 63)
-#define TOP_COLOR SetConsoleTextAttribute(col, 143)
-#define BOT_COLOR SetConsoleTextAttribute(col, 243)
-#define WAR_COLOR SetConsoleTextAttribute(col, 227)
+#define TOP_COLOR SetConsoleTextAttribute(col, 31)
+#define BOT_COLOR SetConsoleTextAttribute(col, 241)
+#define WAR_COLOR SetConsoleTextAttribute(col, 233)
 #define BOX_COLOR SetConsoleTextAttribute(col, 115)
 
 #define DO	524
