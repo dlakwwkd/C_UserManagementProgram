@@ -1148,7 +1148,7 @@ void closeGift(void)
 	Beep(RA, 100);
 	Beep(SOL, 400);
 	Beep(SOL, 100);
-	Beep(MI, 500);
+	Beep(MI, 600);
 	Beep(SOL, 360);
 	Beep(SOL, 80);
 	Beep(MI, 360);
