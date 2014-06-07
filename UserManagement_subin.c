@@ -20,6 +20,7 @@
 	* 주석 추가
 	* 사운드 추가
 	* UI 색상 조금 변경
+	* 사운드 조정
 
 	=== 변경 사항 (2014.06.06) ===
 
@@ -98,15 +99,14 @@ int main(void)
 		{
 		case UP_ARROW_KEY:	//상 방향키
 			if (menu > 1) menu--;
-			Beep(MI, DURATION);
+			moveSound();
 			break;
 		case DOWN_ARROW_KEY:	//하 방향키
 			if (menu < 6) menu++;
-			Beep(MI, DURATION);
+			moveSound();
 			break;
 		case ENTER_KEY:		//enter키
-			Beep(DO, DURATION);
-			Beep(RA, DURATION);
+			inSound();
 			switch (menu)
 			{
 			case 1:	//출력
@@ -130,8 +130,7 @@ int main(void)
 			} //switch(menu) out
 			break;
 		case ESC_KEY:		//esc키
-			Beep(DO, DURATION);
-			Beep(RA, DURATION);
+			inSound();
 			choice = closeProgram();
 
 			if (choice == SAVE)
@@ -146,7 +145,7 @@ int main(void)
 			else break;
 		default:
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 			break;
 		} //switch(input) out
 	}
@@ -260,20 +259,19 @@ void printList(UserInfo userInfo[])
 		switch (input)
 		{
 		case LEFT_ARROW_KEY:	//좌측 방향키
-			Beep(MI, DURATION);
+			moveSound();
 			if (k != 1) k--;
 			break;
 		case RIGHT_ARROW_KEY:	//우측 방향키
-			Beep(MI, DURATION);
+			moveSound();
 			if (k != page) k++;
 			break;
 		case ESC_KEY:		//esc키
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			return;
 		default:
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 			break;
 		}
 	}
@@ -295,7 +293,7 @@ void topMessage(char mess[], char top[])
 
 void bottomMessageA(void)
 {
-	Beep(_DO, DURATION);
+	warningSound();
 	BOT_COLOR;
 	printf("\t\t\t\t\t\t\t\t\t        ");
 	printf("\t\t다시 입력 :  ENTER   \t\t나가기 :  ESC  \t\t\t  ");
@@ -305,6 +303,7 @@ void bottomMessageA(void)
 
 void bottomMessageB(char mess[])
 {
+	warningSound();
 	BOT_COLOR;
 	printf("\t\t\t\t\t\t\t\t\t        ");
 	printf("\t\t %s :  ENTER     \t\t 취소 :  ESC \t\t\t   ", mess);
@@ -326,9 +325,8 @@ void deleteMessage(char mess[], char top[])
 	printf(" \t\t\t  "); DEF_COLOR;
 	printf("\n\t\t\t    "); BOX_COLOR;
 	printf(" ==================== \n\n\n\n\n\n"); DEF_COLOR;
-	Beep(_DO, DURATION);
-	Beep(SOL, DURATION);
-	Beep(RA, DURATION);
+
+	resultSound();
 
 	BOT_COLOR;
 	printf("\t\t\t\t\t\t\t\t\t        ");
@@ -365,17 +363,12 @@ void deleteUser(UserInfo userInfo[], int del)
 		printf("\t\t\t주소\t: %s \n", userInfo[del].userAddress);
 
 		puts("\n\n\n\t\t\t   정말로 삭제하시겠습니까? \n\n\n");
-		BOT_COLOR;
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		printf("\t\t 삭제 :  ENTER     \t\t 취소 :  ESC  \t\t\t  ");
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		DEF_COLOR;
+		bottomMessageB("삭제");
 
 		input = getch();
 
 		if (input == ENTER_KEY){
-			Beep(DO, DURATION);
-			Beep(RA, DURATION);
+			inSound();
 			/* 빈 메모리 공간이 많아지면 메모리 할당량 축소 */
 			if (count < maxsize / 3){
 				maxsize /= 2;
@@ -401,13 +394,12 @@ void deleteUser(UserInfo userInfo[], int del)
 			}
 		}
 		else if (input == ESC_KEY){
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			return;
 		}
 		else{
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 		}
 	}
 	return;
@@ -449,16 +441,15 @@ void modifyUser(UserInfo userInfo[], int fix)
 		switch (input)
 		{
 		case UP_ARROW_KEY:
-			Beep(MI, DURATION);
+			moveSound();
 			if (menu > 1) menu--;
 			break;
 		case DOWN_ARROW_KEY:
-			Beep(MI, DURATION);
+			moveSound();
 			if (menu < 3) menu++;
 			break;
 		case ENTER_KEY:
-			Beep(DO, DURATION);
-			Beep(RA, DURATION);
+			inSound();
 			switch (menu){
 			case NAME:
 				action2 = dataInputB(userInfo, NAME, ptr, fix, "이름", 4, 8);
@@ -488,12 +479,11 @@ void modifyUser(UserInfo userInfo[], int fix)
 			break;
 		case ESC_KEY:
 			action = 0;
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			break;
 		default:
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 			break;
 		}
 	}
@@ -556,19 +546,17 @@ void dataInputA(UserInfo userInfo[])
 
 			if (input == ESC_KEY){
 				maxid--;	 count--;	//등록하지 않으면 count 원래대로 되돌려 놓고 종료
-				Beep(RA, DURATION);
-				Beep(DO, DURATION);
+				outSound();
 				return;
 			}
 			else if (input == ENTER_KEY){
 				action = 1;
-				Beep(RA, DURATION);
-				Beep(DO, DURATION);
+				inSound();
 			}
 			else{
 				action = 0;
 				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-				Beep(_DO, DURATION);
+				warningSound();
 			}
 		}
 		else{
@@ -580,14 +568,11 @@ void dataInputA(UserInfo userInfo[])
 
 			if (input == ESC_KEY){
 				maxid--; count--;
-				Beep(RA, DURATION);
-				Beep(DO, DURATION);
+				outSound();
 				return;
 			}
 			else if (input == ENTER_KEY){
-				Beep(DO, DURATION);
-				Beep(MI, DURATION);
-				Beep(SOL, DURATION);
+				actionSound();
 				Beep(_DO, DURATION);
 				return;	//등록하면 count 증가한 채로 종료
 			}
@@ -595,7 +580,7 @@ void dataInputA(UserInfo userInfo[])
 			else{
 				action = 0;
 				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-				Beep(_DO, DURATION);
+				warningSound();
 			}
 		}
 	}
@@ -637,42 +622,37 @@ int dataInputB(UserInfo userInfo[], int switB, char *temp, int fix, char str[], 
 			input = getch();
 
 			if (input == ESC_KEY){
-				Beep(RA, DURATION);
-				Beep(DO, DURATION);
+				outSound();
 				return 0;	//취소시 0을 리턴 
 			}
 			else if (input == ENTER_KEY){
-				Beep(DO, DURATION);
-				Beep(RA, DURATION);
+				inSound();
 				action = 1;
 			}
 			else{
 				action = 0;
 				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-				Beep(_DO, DURATION);
+				warningSound();
 			}
 		}
 		else{
 			puts("\n\n\n\t\t\t   정말로 수정하시겠습니까? \n\n\n\n");
-
 			bottomMessageB("수정");
 
 			input = getch();
 
 			if (input == ENTER_KEY){
-				Beep(DO, DURATION);
-				Beep(RA, DURATION);
+				inSound();
 				return 1;	//수정하면 1반환
 			}
 			else if (input == ESC_KEY){
-				Beep(RA, DURATION);
-				Beep(DO, DURATION);
+				outSound();
 				return 0;
 			}
 			else{
 				action = 0;
 				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-				Beep(_DO, DURATION);
+				warningSound();
 			}
 		}
 	}
@@ -807,16 +787,15 @@ void searchMain(UserInfo userInfo[], int todo, char mess[], char top[])
 		switch (input)
 		{
 		case UP_ARROW_KEY:
-			Beep(MI, DURATION);
+			moveSound();
 			if (menu > 1) menu--;
 			break;
 		case DOWN_ARROW_KEY:
-			Beep(MI, DURATION);
+			moveSound();
 			if (menu < 3) menu++;
 			break;
 		case ENTER_KEY:
-			Beep(DO, DURATION);
-			Beep(RA, DURATION);
+			inSound();
 			num = searchUser(userInfo, menu);
 
 			if (num){
@@ -829,12 +808,11 @@ void searchMain(UserInfo userInfo[], int todo, char mess[], char top[])
 			}
 			break;
 		case ESC_KEY:
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			return;
 		default:
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 			break;
 		}
 	}
@@ -940,18 +918,16 @@ int searchUser(UserInfo userInfo[], int menu)
 		input = getch();
 
 		if (input == ENTER_KEY){
-			Beep(DO, DURATION);
-			Beep(RA, DURATION);
+			inSound();
 			action = 1;
 		}
 		else if (input == ESC_KEY){
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			return 0;
 		}
 		else{
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 			action = 0;
 		}
 	}
@@ -961,10 +937,8 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 {
 	int input;
 
-	Beep(DO, DURATION);
-	Beep(MI, DURATION);
-	Beep(SOL, DURATION);
-	Beep(_DO, DURATION);
+	resultSound();
+
 	while (1) {
 		topMessage("검색", "Search");
 
@@ -996,17 +970,16 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 		input -= '0';	//아스키 값을 받기 때문에
 
 		if (input + '0' == ESC_KEY){
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			return 0;
 		}
 		else if (input > 0 && input <= num){
-			Beep(RA, DURATION);
+			inSound();
 			return overlap[input];
 		}
 		else {
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 		}
 	}
 }
@@ -1015,9 +988,8 @@ void searchResult(UserInfo userInfo[], int num)
 {
 	int input;
 
-	Beep(DO, DURATION);
-	Beep(MI, DURATION);
-	Beep(SOL, DURATION);
+	resultSound();
+
 	while (1){
 		topMessage("검색", "Search");
 
@@ -1039,13 +1011,12 @@ void searchResult(UserInfo userInfo[], int num)
 		input = getch();
 
 		if (input == ESC_KEY){
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			return;
 		}
 		else {
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 		}
 	}
 }
@@ -1067,15 +1038,12 @@ int saveInfo(UserInfo userInfo[], FILE *writeFile)
 		DEF_COLOR;
 
 		puts("\n\n\n\n\n\n\n\n\t\t\t   정말로 저장하시겠습니까? \n\n\n\n\n\n\n");
-
 		bottomMessageB("저장");
 
 		input = getch();
 
 		if (input == ENTER_KEY){
-			Beep(_DO, DURATION);
-			Beep(SOL, DURATION);
-			Beep(RA, DURATION);
+			actionSound();
 			writeFile = fopen("data.txt", "wt");	//writeFile open
 
 			fprintf(writeFile, "%s\n", userInfo[0].userAddress);
@@ -1088,13 +1056,12 @@ int saveInfo(UserInfo userInfo[], FILE *writeFile)
 		}
 
 		else if (input == ESC_KEY){
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			return 0;
 		}
 		else {
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 		}
 	}
 }
@@ -1136,24 +1103,22 @@ int closeProgram(void)
 		switch (input)
 		{
 		case UP_ARROW_KEY:
-			Beep(MI, DURATION);
+			moveSound();
 			if (menu > 1) menu--;
 			break;
 		case DOWN_ARROW_KEY:
-			Beep(MI, DURATION);
+			moveSound();
 			if (menu < 2) menu++;
 			break;
 		case ENTER_KEY:
-			Beep(DO, DURATION);
-			Beep(RA, DURATION);
+			inSound();
 			return menu;
 		case ESC_KEY:
-			Beep(RA, DURATION);
-			Beep(DO, DURATION);
+			outSound();
 			return 0;
 		default:
 			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			Beep(_DO, DURATION);
+			warningSound();
 			break;
 		}
 	}
@@ -1161,33 +1126,37 @@ int closeProgram(void)
 
 void closeGift(void)
 {
-	Beep(SOL, 200);
-	Beep(SOL, 200);
-	Beep(RA, 200);
-	Beep(RA, 200);
-	Beep(SOL, 200);
-	Beep(SOL, 200);
+	Beep(SOL, 500);
+	Beep(SOL, 100);
+	Beep(RA, 500);
+	Beep(RA, 100);
+	Beep(SOL, 500);
+	Beep(SOL, 100);
+	Beep(MI, 600);
+	Beep(SOL, 100);
+	Beep(SOL, 100);
+	Beep(SOL, 100);
 	Beep(MI, 500);
-	Sleep(200);
-	Beep(SOL, 200);
-	Beep(SOL, 200);
-	Beep(MI, 200);
-	Beep(MI, 200);
-	Beep(RE, 500);
-	Sleep(500);
-	Beep(SOL, 200);
-	Beep(SOL, 200);
-	Beep(RA, 200);
-	Beep(RA, 200);
-	Beep(SOL, 200);
-	Beep(SOL, 200);
+	Beep(MI, 100);
+	Beep(RE, 700);
+	Sleep(300);
+
+	Beep(SOL, 100);
+	Beep(SOL, 100);
+	Beep(SOL, 100);
+	Beep(RA, 500);
+	Beep(RA, 100);
+	Beep(SOL, 100);
+	Beep(SOL, 100);
+	Beep(SOL, 100);
 	Beep(MI, 500);
-	Sleep(200);
-	Beep(SOL, 200);
-	Beep(MI, 200);
-	Beep(RE, 200);
-	Beep(MI, 200);
-	Beep(DO, 500);
+	Sleep(300);
+
+	Beep(SOL, 300);
+	Beep(MI, 300);
+	Beep(RE, 300);
+	Beep(MI, 500);
+	Beep(DO, 700);
 	Sleep(700);
 
 	Beep(DO, 100);
@@ -1195,4 +1164,35 @@ void closeGift(void)
 	Beep(SOL, 100);
 	Beep(_DO, 100);
 	Sleep(500);
+}
+
+void inSound(void)
+{
+	Beep(MI, DURATION);
+	Beep(RA, DURATION);
+}
+void outSound(void)
+{
+	Beep(RA, DURATION);
+	Beep(MI, DURATION);
+}
+void actionSound(void)
+{
+	Beep(DO, DURATION);
+	Beep(MI, DURATION);
+	Beep(SOL, DURATION);
+}
+void resultSound(void)
+{
+	Beep(_DO, DURATION);
+	Beep(SOL, DURATION);
+	Beep(RA, DURATION);
+}
+void warningSound(void)
+{
+	Beep(_DO, DURATION);
+}
+void moveSound(void)
+{
+	Beep(MI, DURATION);
 }

@@ -49,7 +49,7 @@
 #define PA	698
 #define SOL	784
 #define RA	884
-#define SI	858
+#define SI	958
 #define _DO	1048
 
 #define DURATION 70
@@ -89,5 +89,13 @@ void searchResult(UserInfo userInfo[], int num);
 int saveInfo(UserInfo userInfo[], FILE *writeFile);
 int closeProgram(void);
 void closeGift(void);
+
+void inSound(void);
+void outSound(void);
+void actionSound(void);
+void resultSound(void);
+void warningSound(void);
+void moveSound(void);
+
 
 #endif
