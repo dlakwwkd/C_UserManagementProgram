@@ -41,7 +41,7 @@
 #define TOP_COLOR SetConsoleTextAttribute(col, 31)
 #define BOT_COLOR SetConsoleTextAttribute(col, 241)
 #define WAR_COLOR SetConsoleTextAttribute(col, 233)
-#define BOX_COLOR SetConsoleTextAttribute(col, 115)
+#define BOX_COLOR SetConsoleTextAttribute(col, 113)
 
 #define DO	524
 #define RE	588
@@ -71,6 +71,8 @@ void topMessage(char mess[], char top[]);
 void bottomMessageA(void);
 void bottomMessageB(char mess[]);
 void deleteMessage(char mess[], char top[]);
+void messageBoxA(char mess[]);
+void messageBoxB(char str[], char mess[]);
 
 void addUser(UserInfo userInfo[]);
 void deleteUser(UserInfo userInfo[], int del);

@@ -5,12 +5,9 @@
 	      그리고 어떤 상황에서도 문제가 생기지 않는 안전성을 추구했습니다.
 
 	1. 조작키를 방향키, ENTER키, ESC키로 통일 했습니다.
-
 	2. 회원 등록시 리스트에 제대로 출력될 수 있는 값 범위 안으로 입력을 제한하였습니다.
 		(즉, 너무 길거나 짧은 입력, Tap입력 등은 사전에 방지)
-
 	3. 중복되는 코드를 최대한 만들지 않았고, 기능 별로 모듈화 하였습니다.
-
 	4. 가능한 모든 예외상황을 테스트 해보고 있습니다.
 
 	=== 변경 사항 (2014.06.07) ===
@@ -21,6 +18,8 @@
 	* 사운드 추가
 	* UI 색상 조금 변경
 	* 사운드 조정
+	* UI 개선 (메세지 박스 생성)
+	* 종료 노래 조정
 
 	=== 변경 사항 (2014.06.06) ===
 
@@ -315,16 +314,16 @@ void deleteMessage(char mess[], char top[])
 {
 	topMessage(mess, top);
 
-	printf("\n\n\n\n\n\n\t\t\t    "); BOX_COLOR;
-	printf(" ==================== "); DEF_COLOR;
-	printf("\n\t\t\t    "); BOX_COLOR;
-	printf(" \t\t\t  "); DEF_COLOR;
-	printf("\n\t\t\t    "); BOX_COLOR;
-	printf("      %s  완료      \n", mess); DEF_COLOR;
-	printf("\t\t\t    "); BOX_COLOR;
-	printf(" \t\t\t  "); DEF_COLOR;
-	printf("\n\t\t\t    "); BOX_COLOR;
-	printf(" ==================== \n\n\n\n\n\n"); DEF_COLOR;
+	printf("\n\n\n\n\n\n\t\t\t   "); BOX_COLOR;
+	printf("┌──────────┐"); DEF_COLOR;
+	printf("\n\t\t\t   "); BOX_COLOR;
+	printf("│\t\t\t │"); DEF_COLOR;
+	printf("\n\t\t\t   "); BOX_COLOR;
+	printf("│     %s  완료     │", mess); DEF_COLOR;
+	printf("\n\t\t\t   "); BOX_COLOR;
+	printf("│\t\t\t │"); DEF_COLOR;
+	printf("\n\t\t\t   "); BOX_COLOR;
+	printf("└──────────┘\n\n\n\n\n\n"); DEF_COLOR;
 
 	resultSound();
 
@@ -335,6 +334,26 @@ void deleteMessage(char mess[], char top[])
 	DEF_COLOR;
 
 	getch();	//메시지 출력을 위해 정지
+}
+
+void messageBoxA(char mess[])
+{
+	printf("\n\n\n\t\t\t     "); BOX_COLOR;
+	printf("┌────────┐"); DEF_COLOR;
+	printf("\n\t\t\t     "); BOX_COLOR;
+	printf("│ %s │\n", mess); DEF_COLOR;
+	printf("\t\t\t     "); BOX_COLOR;
+	printf("└────────┘\n"); DEF_COLOR;
+}
+
+void messageBoxB(char str[], char mess[])
+{
+	printf("\n\n\n\t\t\t      "); BOX_COLOR;
+	printf("┌───────┐"); DEF_COLOR;
+	printf("\n\t\t\t      "); BOX_COLOR;
+	printf("│  %s%s  │\n", str, mess); DEF_COLOR;
+	printf("\t\t\t      "); BOX_COLOR;
+	printf("└───────┘\n"); DEF_COLOR;
 }
 
 
@@ -412,13 +431,12 @@ void modifyUser(UserInfo userInfo[], int fix)
 	char *ptr;
 	ptr = temp;
 	action = 1;
-
+	
+	inSound();
 
 	while (action){
 		topMessage("수정", "Modify");
-
-		puts("\n\n\n\t\t\t      ◎  수정할 정보  ◎");
-		puts("\t\t\t       ================\n");
+		messageBoxA(" 수정할  정보 ");
 
 		if (menu == NAME) puts("\n\t\t\t\t   [ 이름 ]");
 		else puts("\n\t\t\t\t     이름 ");
@@ -452,7 +470,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 			inSound();
 			switch (menu){
 			case NAME:
-				action2 = dataInputB(userInfo, NAME, ptr, fix, "이름", 4, 8);
+				action2 = dataInputB(userInfo, NAME, ptr, fix, "이름  ", 4, 8);
 
 				if (action2){
 					strcpy(userInfo[fix].userName, temp);
@@ -460,7 +478,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 				}
 				break;
 			case ADDRESS:
-				action2 = dataInputB(userInfo, ADDRESS, ptr, fix, "주소", 10, 30);
+				action2 = dataInputB(userInfo, ADDRESS, ptr, fix, "주소  ", 10, 30);
 
 				if (action2){
 					strcpy(userInfo[fix].userAddress, temp);
@@ -594,9 +612,8 @@ int dataInputB(UserInfo userInfo[], int switB, char *temp, int fix, char str[], 
 
 	while (1) {
 		topMessage("수정", "Modify");
+		messageBoxB(str, "수정");
 
-		printf("\n\n\n\t\t\t      ◎  %s  수정  ◎\n", str);
-		puts("\t\t\t       ================");
 		switch (switB){
 		case NAME:
 			printf("\n\t\t   기존 %s : %s \n", str, userInfo[fix].userName);
@@ -636,7 +653,7 @@ int dataInputB(UserInfo userInfo[], int switB, char *temp, int fix, char str[], 
 			}
 		}
 		else{
-			puts("\n\n\n\t\t\t   정말로 수정하시겠습니까? \n\n\n\n");
+			puts("\n\n\n\t\t\t   정말로 수정하시겠습니까? \n\n\n");
 			bottomMessageB("수정");
 
 			input = getch();
@@ -715,15 +732,14 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 			for (int i = 0; i < NAME_PHONE_BUFFER; i++)
 				temp[i] = 0;
 		}
-		else puts(" ");
-		puts("\n\n\n\t\t\t 이름이 너무 길거나 짧습니다.");
+		else puts("\n");
+		puts("\n\n\t\t\t 이름이 너무 길거나 짧습니다.");
 		puts("\t\t\t 이름은 2 ~ 4 글자만 가능합니다. \n\t\t\t [ 영문 4 ~ 8 글자 ]\n\n");
 		break;
 	case ADDRESS:
 		if (switA == UPDATE){
 			for (int i = 0; i < ADDRESS_BUFFER; i++)
 				temp[i] = 0;
-			puts(" ");
 		}
 		puts("\n\t\t  주소가 너무 길거나 짧습니다. ");
 		puts("\t\t  최소 5글자 이상, 그리고 15글자 이내로 입력해주세요.");
@@ -734,7 +750,8 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 			for (int i = 0; i < NAME_PHONE_BUFFER; i++)
 				temp[i] = 0;
 		}
-		puts("\n\n\t\t\t 연락처 형식에 맞지 않습니다. ");
+		else puts(" ");
+		puts("\n\t\t\t 연락처 형식에 맞지 않습니다. ");
 		puts("\t\t\t 형식에 맞게 입력해주세요. \n\n\t\t     [ 예) 010-1234-5678  or  031-123-4567 ]\n\n");
 		break;
 	case TAB:
@@ -761,9 +778,7 @@ void searchMain(UserInfo userInfo[], int todo, char mess[], char top[])
 
 	while (1) {
 		topMessage(mess, top);
-
-		puts("\n\n\n\t\t\t      ◎  검색  방법  ◎");
-		puts("\t\t\t       ================\n");
+		messageBoxB("검색  ", "방법");
 
 		if (menu == 1) puts("\n\t\t\t      [ 회원ID로  검색 ]");
 		else puts("\n\t\t\t        회원ID로  검색 ");
@@ -830,8 +845,7 @@ int searchUser(UserInfo userInfo[], int menu)
 		switch (menu)
 		{
 		case 1:
-			puts("\n\n\n\t\t\t     ◎  회원ID로 검색  ◎");
-			puts("\t\t\t       =================\n");
+			messageBoxA("회원 ID로 검색");
 
 			if (action){
 				printf("\n\t\t\t\t ID : "); fgets(key, NAME_PHONE_BUFFER, stdin);
@@ -862,8 +876,7 @@ int searchUser(UserInfo userInfo[], int menu)
 			else puts("\n\n\n\t\t\t    존재하지 않는 ID입니다 ! \n\n\n\n");
 			break;
 		case 2:
-			puts("\n\n\n\t\t\t     ◎  이름으로 검색  ◎");
-			puts("\t\t\t       =================\n");
+			messageBoxA("이름으로  검색");
 
 			if (action){
 				printf("\n\t\t\t     이름 : "); fgets(key, NAME_PHONE_BUFFER, stdin);
@@ -887,8 +900,7 @@ int searchUser(UserInfo userInfo[], int menu)
 			else puts("\n\n\n\t\t\t   존재하지 않는 이름입니다 ! \n\n\n\n");
 			break;
 		case 3:
-			puts("\n\n\n\t\t\t     ◎  연락처로 검색  ◎");
-			puts("\t\t\t       =================\n");
+			messageBoxA("연락처로  검색");
 
 			if (action){
 				printf("\n\t\t\t연락처 : "); fgets(key, ADDRESS_BUFFER, stdin);
@@ -992,9 +1004,7 @@ void searchResult(UserInfo userInfo[], int num)
 
 	while (1){
 		topMessage("검색", "Search");
-
-		puts("\n\n\n\t\t\t      ◎  검색  결과  ◎");
-		puts("\t\t\t       ================\n");
+		messageBoxB("검색  ", "결과");
 
 		printf("\n\t\t\t회원ID\t: %d \n\n", userInfo[num].userId);
 		printf("\t\t\t이름\t: %s \n", userInfo[num].userName);
@@ -1037,7 +1047,7 @@ int saveInfo(UserInfo userInfo[], FILE *writeFile)
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		DEF_COLOR;
 
-		puts("\n\n\n\n\n\n\n\n\t\t\t   정말로 저장하시겠습니까? \n\n\n\n\n\n\n");
+		puts("\n\n\n\n\n\n\n\n\t\t\t    정말로 저장하시겠습니까? \n\n\n\n\n\n\n");
 		bottomMessageB("저장");
 
 		input = getch();
@@ -1081,13 +1091,17 @@ int closeProgram(void)
 		printf("\t\t\t\t\t\t\t\t\t        ");
 		DEF_COLOR;
 
-		puts("\n\n\n\n\t\t\t   ◎  저장하시겠습니까?  ◎");
-		puts("\t\t\t     =====================");
+		printf("\n\n\n\t\t\t    "); BOX_COLOR;
+		printf("┌──────────┐"); DEF_COLOR;
+		printf("\n\t\t\t    "); BOX_COLOR;
+		printf("│ 저장하시겠습니까 ? │\n"); DEF_COLOR;
+		printf("\t\t\t    "); BOX_COLOR;
+		printf("└──────────┘\n"); DEF_COLOR;
 
-		if (menu == 1) puts("\n\n\t\t\t       [ 저장하고 종료 ]");
-		else puts("\n\n\t\t\t         저장하고 종료 ");
-		if (menu == 2) puts("\n\t\t\t    [ 저장하지 않고  종료 ] \n\n\n\n\n");
-		else puts("\n\t\t\t      저장하지 않고  종료 \n\n\n\n\n");
+		if (menu == 1) puts("\n\n\t\t\t        [ 저장 후 종료 ]");
+		else puts("\n\n\t\t\t          저장 후 종료 ");
+		if (menu == 2) puts("\n\t\t\t     [ 저장하지 않고 종료 ] \n\n\n\n\n");
+		else puts("\n\t\t\t       저장하지 않고 종료 \n\n\n\n\n");
 
 		BOT_COLOR;
 		printf("\t\t\t\t\t\t\t\t\t        ");
@@ -1126,44 +1140,42 @@ int closeProgram(void)
 
 void closeGift(void)
 {
-	Beep(SOL, 500);
+	Beep(SOL, 400);
 	Beep(SOL, 100);
-	Beep(RA, 500);
+	Beep(RA, 400);
 	Beep(RA, 100);
-	Beep(SOL, 500);
-	Beep(SOL, 100);
-	Beep(MI, 600);
-	Beep(SOL, 100);
-	Beep(SOL, 100);
+	Beep(SOL, 400);
 	Beep(SOL, 100);
 	Beep(MI, 500);
+	Beep(SOL, 360);
+	Beep(SOL, 80);
+	Beep(MI, 360);
 	Beep(MI, 100);
-	Beep(RE, 700);
-	Sleep(300);
+	Beep(RE, 900);
 
 	Beep(SOL, 100);
 	Beep(SOL, 100);
 	Beep(SOL, 100);
-	Beep(RA, 500);
+	Beep(RA, 400);
 	Beep(RA, 100);
 	Beep(SOL, 100);
 	Beep(SOL, 100);
 	Beep(SOL, 100);
-	Beep(MI, 500);
-	Sleep(300);
+	Beep(MI, 700);
+	Sleep(100);
 
 	Beep(SOL, 300);
 	Beep(MI, 300);
 	Beep(RE, 300);
 	Beep(MI, 500);
 	Beep(DO, 700);
-	Sleep(700);
+	Sleep(300);
 
-	Beep(DO, 100);
-	Beep(MI, 100);
-	Beep(SOL, 100);
-	Beep(_DO, 100);
-	Sleep(500);
+	Beep(DO, 90);
+	Beep(MI, 90);
+	Beep(SOL, 90);
+	Beep(_DO, 120);
+	Sleep(300);
 }
 
 void inSound(void)
