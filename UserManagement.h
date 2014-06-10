@@ -67,10 +67,12 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile);
 
 void printMain(int menu);
 void printList(UserInfo userInfo[]);
+
 void topMessage(char mess[], char top[]);
 void bottomMessageA(void);
 void bottomMessageB(char mess[]);
-void deleteMessage(char mess[], char top[]);
+void bottomMessageC(void);
+void centerMessage(char mess[], char top[]);
 void messageBoxA(char mess[]);
 void messageBoxB(char str[], char mess[]);
 

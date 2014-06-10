@@ -1,6 +1,6 @@
 /*
 	작성자: 141033 박수빈
-	최종 작성일: 2014.06.08
+	최종 작성일: 2014.06.10
 	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 디자인 했습니다.
 	      그리고 어떤 상황에서도 문제가 생기지 않는 안전성을 추구했습니다.
 
@@ -9,10 +9,14 @@
 		(즉, 너무 길거나 짧은 입력, Tap입력 등은 사전에 방지)
 	3. 가능한 모든 예외상황을 테스트 해보고 있습니다.
 
+	=== 변경 사항 (2014.06.10) ===
+
+	* bottomMessageC 추가
+	* deleteMessage -> centerMessage로 함수 이름 변경
+
 	=== 변경 사항 (2014.06.08) ===
 
 	* 초기 화면 구성 방법 수정
-
 
 	=== 변경 사항 (2014.06.07) ===
 
@@ -224,11 +228,7 @@ void printMain(int menu)
 	if (menu == 6) puts("\n\t\t\t      [ 변경 사항 저장 ]\n\n");
 	else puts("\n\t\t\t        변경 사항 저장 \n\n");
 
-	BOT_COLOR;
-	printf("\t\t\t\t\t\t\t\t\t        ");
-	printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t   종료 : ESC \t        ");
-	printf("\t\t\t\t\t\t\t\t\t        ");
-	DEF_COLOR;
+	bottomMessageC();
 }
 
 void printList(UserInfo userInfo[])
@@ -320,7 +320,16 @@ void bottomMessageB(char mess[])
 	DEF_COLOR;
 }
 
-void deleteMessage(char mess[], char top[])
+void bottomMessageC(void)
+{
+	BOT_COLOR;
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC \t        ");
+	printf("\t\t\t\t\t\t\t\t\t        ");
+	DEF_COLOR;
+}
+
+void centerMessage(char mess[], char top[])
 {
 	topMessage(mess, top);
 
@@ -405,7 +414,7 @@ void deleteUser(UserInfo userInfo[], int del)
 			}
 			/* 삭제 대상이 맨 마지막에 있다면, count를 하나 줄이는 것으로 끝 */
 			if (del == count){
-				deleteMessage("삭제", "Delete");
+				centerMessage("삭제", "Delete");
 				count--;
 				return;
 			}
@@ -417,7 +426,7 @@ void deleteUser(UserInfo userInfo[], int del)
 					strcpy(userInfo[i - 1].userAddress, userInfo[i].userAddress);
 					strcpy(userInfo[i - 1].handphone, userInfo[i].handphone);
 				}
-				deleteMessage("삭제", "Delete");
+				centerMessage("삭제", "Delete");
 				count--;
 				return;
 			}
@@ -455,11 +464,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 		if (menu == PHONE) puts("\n\t\t\t\t  [ 연락처 ]\n\n\n\n");
 		else puts("\n\t\t\t\t    연락처 \n\n\n\n");
 
-		BOT_COLOR;
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC \t        ");
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		DEF_COLOR;
+		bottomMessageC();
 
 		input = getch();
 
@@ -484,7 +489,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 
 				if (action2){
 					strcpy(userInfo[fix].userName, temp);
-					deleteMessage("수정", "Modify");
+					centerMessage("수정", "Modify");
 				}
 				break;
 			case ADDRESS:
@@ -492,7 +497,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 
 				if (action2){
 					strcpy(userInfo[fix].userAddress, temp);
-					deleteMessage("수정", "Modify");
+					centerMessage("수정", "Modify");
 				}
 				break;
 			case PHONE:
@@ -500,7 +505,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 
 				if (action2){
 					strcpy(userInfo[fix].handphone, temp);
-					deleteMessage("수정", "Modify");
+					centerMessage("수정", "Modify");
 				}
 				break;
 			}
@@ -797,12 +802,7 @@ void searchMain(UserInfo userInfo[], int todo, char mess[], char top[])
 		if (menu == 3) puts("\n\t\t\t      [ 연락처로  검색 ]\n\n\n\n");
 		else puts("\n\t\t\t        연락처로  검색 \n\n\n\n");
 
-		BOT_COLOR;
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC \t        ");
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		DEF_COLOR;
-
+		bottomMessageC();
 
 		input = getch();
 
@@ -1114,11 +1114,7 @@ int closeProgram(void)
 		if (menu == 2) puts("\n\t\t\t     [ 저장하지 않고 종료 ] \n\n\n\n");
 		else puts("\n\t\t\t       저장하지 않고 종료 \n\n\n\n");
 
-		BOT_COLOR;
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t   취소 : ESC \t        ");
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		DEF_COLOR;
+		bottomMessageC();
 
 		input = getch();
 
