@@ -1,14 +1,18 @@
 /*
 	작성자: 141033 박수빈
-	최종 작성일: 2014.06.07
+	최종 작성일: 2014.06.08
 	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 디자인 했습니다.
 	      그리고 어떤 상황에서도 문제가 생기지 않는 안전성을 추구했습니다.
 
 	1. 조작키를 방향키, ENTER키, ESC키로 통일 했습니다.
 	2. 회원 등록시 리스트에 제대로 출력될 수 있는 값 범위 안으로 입력을 제한하였습니다.
 		(즉, 너무 길거나 짧은 입력, Tap입력 등은 사전에 방지)
-	3. 중복되는 코드를 최대한 만들지 않았고, 기능 별로 모듈화 하였습니다.
-	4. 가능한 모든 예외상황을 테스트 해보고 있습니다.
+	3. 가능한 모든 예외상황을 테스트 해보고 있습니다.
+
+	=== 변경 사항 (2014.06.08) ===
+
+	* 초기 화면 구성 방법 수정
+
 
 	=== 변경 사항 (2014.06.07) ===
 
@@ -79,17 +83,22 @@ int main(void)
 	UserInfo *userInfo = NULL;
 	FILE *readFile = NULL;
 	FILE *writeFile = NULL;
-	int input = 1, menu = 1, choice, clear = 1;
+	int input = 1, menu = 1, choice;
+
+	puts("\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t        =  시작하는 중  = \n\n\n\n\n\n\n\n\n\n\n");
 
 	userInfo = setUserInfo(userInfo, readFile);	//구조체 배열에 파일 데이터 저장
 	if (userInfo == (UserInfo*)-1) return 0;	//오류 났을 경우 바로 종료
 
+	printMain(menu);	//초기 화면 기반
+	printMain(menu);	//초기 화면 정돈
+
+	actionSound();	//로딩 완료 효과음
+
 	while(1) {
 		printMain(menu);	//메인 화면 출력
 		
-		
-		if (clear) clear--;	//초기 화면 정돈
-		else input = getch();
+		input = getch();	//입력
 		
 		if (input == ARROW_BUFFER)	//방향키는 입력 시 아스키확장 값이 먼저 들어온 후 값이 들어옴
 			input = getch();	//그래서 이 경우 버퍼를 한번 비우도록 하였음
@@ -158,7 +167,7 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile)
 {
 	readFile = fopen("data.txt", "rt");	//readFile open
 	if (readFile == NULL){
-		puts("\n\n\n\n\n\n\n\n\n\n\n\t\t\t 데이터가 존재하지 않습니다! \n\n\n\n\n\n\n\n\n\n\n");
+		puts("\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t 데이터가 존재하지 않습니다! \n\n\n\n\n\n\n\n\n\n\n");
 		return (UserInfo*)-1;
 	}
 
@@ -167,7 +176,7 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile)
 	}
 
 	if (count < 1){
-		puts("\n\n\n\n\n\n\n\n\n\n\n\t\t\t 데이터가 존재하지 않습니다! \n\n\n\n\n\n\n\n\n\n\n");
+		puts("\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t 데이터가 존재하지 않습니다! \n\n\n\n\n\n\n\n\n\n\n");
 		return (UserInfo*)-1;
 	}
 
