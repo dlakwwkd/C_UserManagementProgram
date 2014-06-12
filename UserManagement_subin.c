@@ -1,6 +1,6 @@
 /*
 	작성자: 141033 박수빈
-	최종 작성일: 2014.06.10
+	최종 작성일: 2014.06.12
 	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 디자인 했습니다.
 	      그리고 어떤 상황에서도 문제가 생기지 않는 안전성을 추구했습니다.
 
@@ -8,6 +8,15 @@
 	2. 회원 등록시 리스트에 제대로 출력될 수 있는 값 범위 안으로 입력을 제한하였습니다.
 		(즉, 너무 길거나 짧은 입력, Tap입력 등은 사전에 방지)
 	3. 가능한 모든 예외상황을 테스트 해보고 있습니다.
+	
+	=== 변경 사항 (2014.06.12) ===
+
+	* 메인 화면 구성 방법 변경
+	* 강조색 사용
+	* 메뉴 선택 숫자키로도 가능하도록 수정
+	* 페이지 검색 기능 추가
+	* 경고 메시지 함수로 분리
+	* define 이름 몇몇 가지 통합사용
 
 	=== 변경 사항 (2014.06.10) ===
 
@@ -84,29 +93,31 @@ static int count = -1;	//전체 회원 수
 int main(void)
 {
 	system("mode con lines=25 cols=80");	//콘솔 창 크기 초기화
+
 	UserInfo *userInfo = NULL;
 	FILE *readFile = NULL;
 	FILE *writeFile = NULL;
 	int input = 1, menu = 1, choice;
+	int *ptr = &menu;
+	char *menu_num[MENU_NUM];
 
 	puts("\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t        =  시작하는 중  = \n\n\n\n\n\n\n\n\n\n\n");
 
 	userInfo = setUserInfo(userInfo, readFile);	//구조체 배열에 파일 데이터 저장
 	if (userInfo == (UserInfo*)-1) return 0;	//오류 났을 경우 바로 종료
 
-	printMain(menu);	//초기 화면 기반
-	printMain(menu);	//초기 화면 정돈
+	printMainSub(menu, menu_num);	//메인 메뉴 구성
 
 	actionSound();	//로딩 완료 효과음
 
 	while(1) {
-		printMain(menu);	//메인 화면 출력
+		printMain(menu, menu_num);	//메인 화면 출력
 		
 		input = getch();	//입력
 		
 		if (input == ARROW_BUFFER)	//방향키는 입력 시 아스키확장 값이 먼저 들어온 후 값이 들어옴
 			input = getch();	//그래서 이 경우 버퍼를 한번 비우도록 하였음
-		
+
 		switch (input)
 		{
 		case UP_ARROW_KEY:	//상 방향키
@@ -139,6 +150,7 @@ int main(void)
 			case 6:	//저장
 				saveInfo(userInfo, writeFile);
 				break;
+
 			} //switch(menu) out
 			break;
 		case ESC_KEY:		//esc키
@@ -156,8 +168,7 @@ int main(void)
 			}
 			else break;
 		default:
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
+			warningMessage(input - '0', 6, ptr);
 			break;
 		} //switch(input) out
 	}
@@ -203,7 +214,7 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile)
 }
 
 
-void printMain(int menu)
+void printMain(int menu, char *menu_num[MENU_NUM])
 {
 	system("cls");
 
@@ -215,50 +226,34 @@ void printMain(int menu)
 	printf("\t\t\t\t\t\t\t\t\t        ");
 	DEF_COLOR;
 
-	if (menu == 1) puts("\n\n\n\t\t\t      [ 회원 명단 출력 ]");
-	else puts("\n\n\n\t\t\t        회원 명단 출력 ");
-	if (menu == 2) puts("\n\t\t\t      [ 신규 회원 등록 ]");
-	else puts("\n\t\t\t        신규 회원 등록 ");
-	if (menu == 3) puts("\n\t\t\t      [ 기존 회원 삭제 ]");
-	else puts("\n\t\t\t        기존 회원 삭제 ");
-	if (menu == 4) puts("\n\t\t\t      [ 회원 정보 수정 ]");
-	else puts("\n\t\t\t        회원 정보 수정 ");
-	if (menu == 5) puts("\n\t\t\t      [ 현재 회원 검색 ]");
-	else puts("\n\t\t\t        현재 회원 검색 ");
-	if (menu == 6) puts("\n\t\t\t      [ 변경 사항 저장 ]\n\n");
-	else puts("\n\t\t\t        변경 사항 저장 \n\n");
+	menuSelectA(menu, 6, menu_num);
 
 	bottomMessageC();
 }
 
+void printMainSub(int menu, char *menu_num[MENU_NUM])
+{
+	menu_num[0] = "1. 전체 명단 보기";
+	menu_num[1] = "2. 신규 회원 등록";
+	menu_num[2] = "3. 기존 회원 삭제";
+	menu_num[3] = "4. 회원 정보 수정";
+	menu_num[4] = "5. 회원 정보 검색";
+	menu_num[5] = "6. 변경 사항 저장";
+
+	printMain(menu, menu_num);	//초기 화면 기반
+	printMain(menu, menu_num);	//초기 화면 정돈
+}
+
 void printList(UserInfo userInfo[])
 {
-	int input, page, i, k = 1;
+	int input, page, k = 1, temp;
+	int *ptr = &k;
+	char search[OVERLAP_BUFFER];
 
 	page = 1 + (count - 1) / 18;	//전체 페이지 계산
 
 	while(1) {
-		system("cls");
-
-		TOP_COLOR;
-		printf("List   \t\t\t\t\t\t\t\t     page %d/%d   ", k, page); printf("\t\t\t\t\t\t\t\t\t        ");
-		BOT_COLOR;
-		printf("\t회원ID \t 이름   \t연락처  \t주소 \t\t\t\t");
-		DEF_COLOR;
-		printf("\t\t\t\t\t\t\t\t\t        ");
-		
-		for (i = 1+(k-1)*18; i <= k*18 && i <= count; i++)	//리스트 출력
-			printf("\t%d \t %s   \t%s  \t%s\n",
-			userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
-		
-		if (page == k){	//공백 채우기
-			for (i = count - (1+(k-1)*18); 17 - i > 0; i++)
-				puts(" ");
-		}
-
-		BOT_COLOR;
-		printf("\n\t 페이지 이동 :   ←    →  \t\t\t 나가기 :  ESC \t\t");
-		DEF_COLOR;
+		printListSub(userInfo, page, ptr, ON);
 
 		input = getch();
 
@@ -275,17 +270,103 @@ void printList(UserInfo userInfo[])
 			moveSound();
 			if (k != page) k++;
 			break;
+		case ENTER_KEY:		//enter키
+			inSound();
+			printListSub(userInfo, page, ptr, OFF);
+
+			printf("페이지 검색: "); fgets(search, OVERLAP_BUFFER, stdin);
+			temp = atoi(search);
+
+			if (temp > 0 && temp <= page) k = temp;
+			else warningMessage(0, 0, 0);
+
+			break;
 		case ESC_KEY:		//esc키
 			outSound();
 			return;
 		default:
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
+			warningMessage(input - '0', page, ptr);
 			break;
 		}
 	}
 }
 
+void printListSub(UserInfo userInfo[], int page, int *ptr, int swit)
+{
+	int i;
+	system("cls");
+
+	TOP_COLOR;
+	printf("List   \t\t\t\t\t\t\t\t     page %d/%d   ", *ptr, page); printf("\t\t\t\t\t\t\t\t\t        ");
+	BOT_COLOR;
+	printf("\t회원ID \t 이름   \t연락처  \t주소 \t\t\t\t");
+	DEF_COLOR;
+	printf("\t\t\t\t\t\t\t\t\t        ");
+
+	for (i = 1 + (*ptr - 1) * 18; i <= *ptr * 18 && i <= count; i++){	//리스트 출력
+		if (i % 6 == 1) BEAUTI2_COLOR;
+		else DEF_COLOR;
+		printf("\t%d \t %s   \t%s  \t%s\n",
+			userInfo[i].userId, userInfo[i].userName, userInfo[i].handphone, userInfo[i].userAddress);
+	}
+
+	if (page == *ptr){	//공백 채우기
+		for (i = count - (1 + (*ptr - 1) * 18); 17 - i > 0; i++)
+			puts(" ");
+	}
+
+	if (swit) puts(" ");
+
+	BOT_COLOR;
+	printf("\t 페이지 이동 :  ← → or 숫자키\t\t  나가기 :  ESC \t\t");
+	DEF_COLOR;
+}
+
+
+void menuSelectA(int menu, int max, char *menu_num[MENU_NUM])
+{
+	puts("\n");
+	for (int i = 0; i < max; i++){
+		if (menu == i + 1){
+			printf("\n\t\t\t    "); BEAUTI1_COLOR;
+			printf("[ "); BEAUTI2_COLOR;
+			printf("%s", menu_num[i]); BEAUTI1_COLOR;
+			printf(" ] \n"); DEF_COLOR;
+		}
+		else printf("\n\t\t\t      %s \n", menu_num[i]);
+	}
+	puts("\n");
+}
+
+void menuSelectB(int menu, int max, char *menu_num[MENU_NUM])
+{
+	puts(" ");
+	for (int i = 0; i < max; i++){
+		if (menu == i + 1){
+			printf("\n\t\t\t     "); BEAUTI1_COLOR;
+			printf("[ "); BEAUTI2_COLOR;
+			printf("%s", menu_num[i]); BEAUTI1_COLOR;
+			printf(" ] \n"); DEF_COLOR;
+		}
+		else printf("\n\t\t\t       %s \n", menu_num[i]);
+	}
+	puts("\n\n");
+}
+
+void menuSelectC(int menu, int max, char *menu_num[MENU_NUM])
+{
+	puts(" ");
+	for (int i = 0; i < max; i++){
+		if (menu == i + 1){
+			printf("\n\t\t\t        "); BEAUTI1_COLOR;
+			printf("[ "); BEAUTI2_COLOR;
+			printf("%s", menu_num[i]); BEAUTI1_COLOR;
+			printf(" ] \n"); DEF_COLOR;
+		}
+		else printf("\n\t\t\t          %s \n", menu_num[i]);
+	}
+	puts("\n\n");
+}
 
 void topMessage(char mess[], char top[])
 {
@@ -324,7 +405,7 @@ void bottomMessageC(void)
 {
 	BOT_COLOR;
 	printf("\t\t\t\t\t\t\t\t\t        ");
-	printf("\t메뉴 이동 : ↑↓\t메뉴 선택 : ENTER      \t 나가기 : ESC \t        ");
+	printf("     메뉴 선택 : ENTER     메뉴 이동 : ↑↓ or 숫자키      나가기 : ESC \t       ");
 	printf("\t\t\t\t\t\t\t\t\t        ");
 	DEF_COLOR;
 }
@@ -373,6 +454,15 @@ void messageBoxB(char str[], char mess[])
 	printf("│  %s%s  │\n", str, mess); DEF_COLOR;
 	printf("\t\t\t      "); BOX_COLOR;
 	printf("└───────┘\n"); DEF_COLOR;
+}
+
+void warningMessage(int input, int max, int *ptr)
+{
+	if (input > 0 && input <= max) *ptr = input;
+	else{
+		WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
+		warningSound();
+	}
 }
 
 
@@ -435,10 +525,7 @@ void deleteUser(UserInfo userInfo[], int del)
 			outSound();
 			return;
 		}
-		else{
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
-		}
+		else warningMessage(input - '0', 0, 0);
 	}
 	return;
 }
@@ -448,22 +535,22 @@ void modifyUser(UserInfo userInfo[], int fix)
 	int input, menu = 1, action, action2;
 	char temp[ADDRESS_BUFFER];
 	char *ptr;
+	int *ptr2;
 	ptr = temp;
+	ptr2 = &menu;
 	action = 1;
+	char *menu_num3[MENU_NUM] = {
+		{ "1. 이름" },
+		{ "2. 주소" },
+		{ "3. 연락처" },
+	};
 	
 	inSound();
 
 	while (action){
 		topMessage("수정", "Modify");
 		messageBoxA(" 수정할  정보 ");
-
-		if (menu == NAME) puts("\n\t\t\t\t   [ 이름 ]");
-		else puts("\n\t\t\t\t     이름 ");
-		if (menu == ADDRESS) puts("\n\t\t\t\t   [ 주소 ]");
-		else puts("\n\t\t\t\t     주소 ");
-		if (menu == PHONE) puts("\n\t\t\t\t  [ 연락처 ]\n\n\n\n");
-		else puts("\n\t\t\t\t    연락처 \n\n\n\n");
-
+		menuSelectC(menu, 3, menu_num3);
 		bottomMessageC();
 
 		input = getch();
@@ -515,8 +602,7 @@ void modifyUser(UserInfo userInfo[], int fix)
 			outSound();
 			break;
 		default:
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
+			warningMessage(input - '0', 3, ptr2);
 			break;
 		}
 	}
@@ -588,8 +674,7 @@ void dataInputA(UserInfo userInfo[])
 			}
 			else{
 				action = 0;
-				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-				warningSound();
+				warningMessage(input - '0', 0, 0);
 			}
 		}
 		else{
@@ -612,8 +697,7 @@ void dataInputA(UserInfo userInfo[])
 				
 			else{
 				action = 0;
-				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-				warningSound();
+				warningMessage(input - '0', 0, 0);
 			}
 		}
 	}
@@ -649,7 +733,7 @@ int dataInputB(UserInfo userInfo[], int switB, char *temp, int fix, char str[], 
 		else printf("%s \n", temp);
 		
 		if(warning){
-			dataInputWarning(temp, UPDATE, switB, switC);
+			dataInputWarning(temp, MODIFY, switB, switC);
 
 			input = getch();
 
@@ -663,8 +747,7 @@ int dataInputB(UserInfo userInfo[], int switB, char *temp, int fix, char str[], 
 			}
 			else{
 				action = 0;
-				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-				warningSound();
+				warningMessage(input - '0', 0, 0);
 			}
 		}
 		else{
@@ -683,8 +766,7 @@ int dataInputB(UserInfo userInfo[], int switB, char *temp, int fix, char str[], 
 			}
 			else{
 				action = 0;
-				WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-				warningSound();
+				warningMessage(input - '0', 0, 0);
 			}
 		}
 	}
@@ -697,7 +779,7 @@ int dataInputAction(int warning, int switB, int *ptrC, char *temp, int min, int 
 	if (switB == ADDRESS) fgets(temp, ADDRESS_BUFFER, stdin);
 	else fgets(temp, NAME_PHONE_BUFFER, stdin);
 
-	if (*(temp + strlen(temp) - 1) == '\n')
+	if (*(temp + strlen(temp) - 1) == '\n')	//fgets는 '\n'도 변수에 저장하기 때문에 이를 제거
 		*(temp + strlen(temp) - 1) = '\0';
 	else while (getchar() != '\n');
 
@@ -743,7 +825,7 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 {
 	switch (switC){
 	case NAME:
-		if (switA == UPDATE){
+		if (switA == MODIFY){
 			for (int i = 0; i < NAME_PHONE_BUFFER; i++)
 				temp[i] = 0;
 		}
@@ -752,7 +834,7 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 		puts("\t\t\t 이름은 2 ~ 4 글자만 가능합니다. \n\t\t\t [ 영문 4 ~ 8 글자 ]\n\n");
 		break;
 	case ADDRESS:
-		if (switA == UPDATE){
+		if (switA == MODIFY){
 			for (int i = 0; i < ADDRESS_BUFFER; i++)
 				temp[i] = 0;
 		}
@@ -761,7 +843,7 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 		puts("\n\t\t  [ 영문 : 10 ~ 30글자 (공백 포함) ]\n\n");
 		break;
 	case PHONE:
-		if (switA == UPDATE){
+		if (switA == MODIFY){
 			for (int i = 0; i < NAME_PHONE_BUFFER; i++)
 				temp[i] = 0;
 		}
@@ -770,7 +852,7 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 		puts("\t\t\t 형식에 맞게 입력해주세요. \n\n\t\t     [ 예) 010-1234-5678  or  031-123-4567 ]\n\n");
 		break;
 	case TAB:
-		if (switA == UPDATE){
+		if (switA == MODIFY){
 			if (switB == ADDRESS){
 				for (int i = 0; i < ADDRESS_BUFFER; i++)
 					temp[i] = 0;
@@ -790,18 +872,17 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 void searchMain(UserInfo userInfo[], int todo, char mess[], char top[])
 {
 	int input, menu = 1, num;
+	int *ptr = &menu;
+	char *menu_num2[MENU_NUM] = {
+		{ "1. 회원ID로 검색" },
+		{ "2. 이름으로 검색" },
+		{ "3. 연락처로 검색" }
+	};
 
 	while (1) {
 		topMessage(mess, top);
 		messageBoxB("검색  ", "방법");
-
-		if (menu == 1) puts("\n\t\t\t      [ 회원ID로  검색 ]");
-		else puts("\n\t\t\t        회원ID로  검색 ");
-		if (menu == 2) puts("\n\t\t\t      [ 이름으로  검색 ]");
-		else puts("\n\t\t\t        이름으로  검색 ");
-		if (menu == 3) puts("\n\t\t\t      [ 연락처로  검색 ]\n\n\n\n");
-		else puts("\n\t\t\t        연락처로  검색 \n\n\n\n");
-
+		menuSelectB(menu, 3, menu_num2);
 		bottomMessageC();
 
 		input = getch();
@@ -836,8 +917,7 @@ void searchMain(UserInfo userInfo[], int todo, char mess[], char top[])
 			outSound();
 			return;
 		default:
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
+			warningMessage(input - '0', 3, ptr);
 			break;
 		}
 	}
@@ -948,8 +1028,7 @@ int searchUser(UserInfo userInfo[], int menu)
 			return 0;
 		}
 		else{
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
+			warningMessage(input - '0', 0, 0);
 			action = 0;
 		}
 	}
@@ -999,10 +1078,7 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 			inSound();
 			return overlap[input];
 		}
-		else {
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
-		}
+		else warningMessage(input - '0', 0, 0);
 	}
 }
 
@@ -1034,10 +1110,7 @@ void searchResult(UserInfo userInfo[], int num)
 			outSound();
 			return;
 		}
-		else {
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
-		}
+		else warningMessage(input - '0', 0, 0);
 	}
 }
 
@@ -1080,10 +1153,7 @@ int saveInfo(UserInfo userInfo[], FILE *writeFile)
 			outSound();
 			return 0;
 		}
-		else {
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
-		}
+		else warningMessage(input - '0', 0, 0);
 	}
 }
 
@@ -1138,8 +1208,7 @@ int closeProgram(void)
 			outSound();
 			return 0;
 		default:
-			WAR_COLOR; printf("잘못된 입력입니다.\t\t\t\t\t\t\t       "); DEF_COLOR;
-			warningSound();
+			warningMessage(input - '0', 0, 0);
 			break;
 		}
 	}

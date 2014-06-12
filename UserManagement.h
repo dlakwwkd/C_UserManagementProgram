@@ -21,14 +21,14 @@
 #define ESC_KEY 27
 #define ARROW_BUFFER 224
 
-#define INSERT 1
-#define UPDATE 2
+#define MENU_NUM 6
 
 #define NAME 1
 #define ADDRESS 2
 #define PHONE 3
 #define TAB 4
 
+#define INSERT 1
 #define _DELETE 1
 #define MODIFY 2
 #define SEARCH 3
@@ -36,12 +36,19 @@
 #define SAVE 1
 #define EXIT 2
 
+#define ON 1
+#define OFF 0
+
 #define col GetStdHandle(STD_OUTPUT_HANDLE)
 #define DEF_COLOR SetConsoleTextAttribute(col, 63)
 #define TOP_COLOR SetConsoleTextAttribute(col, 31)
 #define BOT_COLOR SetConsoleTextAttribute(col, 241)
-#define WAR_COLOR SetConsoleTextAttribute(col, 233)
+#define WAR_COLOR SetConsoleTextAttribute(col, 207)
 #define BOX_COLOR SetConsoleTextAttribute(col, 113)
+#define BEAUTI1_COLOR SetConsoleTextAttribute(col, 57)
+#define BEAUTI2_COLOR SetConsoleTextAttribute(col, 62)
+#define BEAUTI3_COLOR SetConsoleTextAttribute(col, 62)
+#define BEAUTI4_COLOR SetConsoleTextAttribute(col, 63)
 
 #define DO	524
 #define RE	588
@@ -65,9 +72,14 @@ typedef struct{
 
 UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile);
 
-void printMain(int menu);
+void printMain(int menu, char *menu_num[MENU_NUM]);
+void printMainSub(int menu, char *menu_num[MENU_NUM]);
 void printList(UserInfo userInfo[]);
+void printListSub(UserInfo userInfo[], int page, int *ptr, int swit);
 
+void menuSelectA(int menu, int max, char *menu_num[MENU_NUM]);
+void menuSelectB(int menu, int max, char *menu_num[MENU_NUM]);
+void menuSelectC(int menu, int max, char *menu_num[MENU_NUM]);
 void topMessage(char mess[], char top[]);
 void bottomMessageA(void);
 void bottomMessageB(char mess[]);
@@ -75,6 +87,7 @@ void bottomMessageC(void);
 void centerMessage(char mess[], char top[]);
 void messageBoxA(char mess[]);
 void messageBoxB(char str[], char mess[]);
+void warningMessage(int input, int max, int *ptr);
 
 void addUser(UserInfo userInfo[]);
 void deleteUser(UserInfo userInfo[], int del);
