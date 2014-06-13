@@ -47,8 +47,10 @@
 #define BOX_COLOR SetConsoleTextAttribute(col, 113)
 #define BEAUTI1_COLOR SetConsoleTextAttribute(col, 57)
 #define BEAUTI2_COLOR SetConsoleTextAttribute(col, 62)
-#define BEAUTI3_COLOR SetConsoleTextAttribute(col, 62)
-#define BEAUTI4_COLOR SetConsoleTextAttribute(col, 63)
+#define BEAUTI3_COLOR SetConsoleTextAttribute(col, 55)
+#define BEAUTI4_COLOR SetConsoleTextAttribute(col, 47)
+#define BEAUTI5_COLOR SetConsoleTextAttribute(col, 46)
+#define ORIGIN_COLOR SetConsoleTextAttribute(col, 15)
 
 #define DO	524
 #define RE	588
@@ -76,6 +78,8 @@ void printMain(int menu, char *menu_num[MENU_NUM]);
 void printMainSub(int menu, char *menu_num[MENU_NUM]);
 void printList(UserInfo userInfo[]);
 void printListSub(UserInfo userInfo[], int page, int *ptr, int swit);
+void printClose(void);
+void printClose_sub(void);
 
 void menuSelectA(int menu, int max, char *menu_num[MENU_NUM]);
 void menuSelectB(int menu, int max, char *menu_num[MENU_NUM]);
@@ -105,8 +109,9 @@ void searchResult(UserInfo userInfo[], int num);
 
 int saveInfo(UserInfo userInfo[], FILE *writeFile);
 int closeProgram(void);
-void closeGift(void);
 
+void startSound(void);
+void closeSound(void);
 void inSound(void);
 void outSound(void);
 void actionSound(void);

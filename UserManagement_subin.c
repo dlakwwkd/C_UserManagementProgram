@@ -1,14 +1,31 @@
 /*
 	작성자: 141033 박수빈
-	최종 작성일: 2014.06.12
-	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 디자인 했습니다.
-	      그리고 어떤 상황에서도 문제가 생기지 않는 안전성을 추구했습니다.
+	최종 작성일: 2014.06.13
+	설명: 사용자 입장에서 최대한 간편하게 느낄 수 있도록 하는 것을 목표로 했습니다.
+	      그리고 어떤 상황에서도 에러가 생기지 않는 안전성을 추구했습니다.
 
 	1. 조작키를 방향키, ENTER키, ESC키로 통일 했습니다.
+
 	2. 회원 등록시 리스트에 제대로 출력될 수 있는 값 범위 안으로 입력을 제한하였습니다.
 		(즉, 너무 길거나 짧은 입력, Tap입력 등은 사전에 방지)
-	3. 가능한 모든 예외상황을 테스트 해보고 있습니다.
 	
+	3. 어떤 입력 도중 취소하고 나가고 싶을 경우 바로 나갈 수 있도록 구성했습니다.
+
+	4. 리스트 화면에서 페이지를 빠르게 탐색할 수 있도록 ENTER키를 입력하면
+	   페이지를 검색할 수 있도록 하였습니다.
+
+	5. 검색 결과가 중복될 경우, 그 목록 창이 출력되도록 하였습니다.
+	
+
+	=== 변경 사항 (2014.06.13) ===
+
+	* 강조색 구현방법 수정
+	* 종료시 선택지에도 적용
+	* 회원 등록시에 컬러 추가
+	* 연락처에 지번이 두 개인 경우도 등록 가능하게 수정
+	* 프로그램 시작 화면, 종료 화면 구성
+	* 시작, 종료 사운드 변경
+
 	=== 변경 사항 (2014.06.12) ===
 
 	* 메인 화면 구성 방법 변경
@@ -106,9 +123,9 @@ int main(void)
 	userInfo = setUserInfo(userInfo, readFile);	//구조체 배열에 파일 데이터 저장
 	if (userInfo == (UserInfo*)-1) return 0;	//오류 났을 경우 바로 종료
 
-	printMainSub(menu, menu_num);	//메인 메뉴 구성
+	startSound();	//로딩 완료 효과음
 
-	actionSound();	//로딩 완료 효과음
+	printMainSub(menu, menu_num);	//메인 메뉴 구성
 
 	while(1) {
 		printMain(menu, menu_num);	//메인 화면 출력
@@ -161,9 +178,12 @@ int main(void)
 				choice = saveInfo(userInfo, writeFile);
 
 			if (choice == SAVE || choice == EXIT){
-				printf("프로그램을 종료합니다.\t");
+				printClose();
+
 				free(userInfo);
-				closeGift();
+
+				closeSound();
+				printClose_sub();
 				return 0;
 			}
 			else break;
@@ -202,7 +222,8 @@ UserInfo* setUserInfo(UserInfo userInfo[], FILE *readFile)
 	fscanf(readFile, "%[^\n]", userInfo[0].userAddress);	//첫 문장은 따로 저장
 
 	for (int i = 1; !feof(readFile); i++)
-		fscanf(readFile, "%d\t%[^\t]\t%[^\t]\t%[^\n]\n", &userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
+		fscanf(readFile, "%d\t%[^\t]\t%[^\t]\t%[^\n]\n",
+		&userInfo[i].userId, userInfo[i].userName, userInfo[i].userAddress, userInfo[i].handphone);
 
 	fclose(readFile);	//readFile close
 
@@ -322,16 +343,29 @@ void printListSub(UserInfo userInfo[], int page, int *ptr, int swit)
 	DEF_COLOR;
 }
 
+void printClose(void)
+{
+	DEF_COLOR;
+	puts("\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t        =  종료하는 중  = \n\n\n\n\n\n\n\n\n\n\n");
+}
+
+void printClose_sub(void)
+{
+	ORIGIN_COLOR;
+	system("cls");
+	puts("\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t         =  종료 완료  = \n");
+	printf("\t\t\t");
+}
+
 
 void menuSelectA(int menu, int max, char *menu_num[MENU_NUM])
 {
 	puts("\n");
 	for (int i = 0; i < max; i++){
 		if (menu == i + 1){
-			printf("\n\t\t\t    "); BEAUTI1_COLOR;
-			printf("[ "); BEAUTI2_COLOR;
-			printf("%s", menu_num[i]); BEAUTI1_COLOR;
-			printf(" ] \n"); DEF_COLOR;
+			BEAUTI1_COLOR; printf("\n\t\t\t    [ ");
+			BEAUTI2_COLOR; printf("%s", menu_num[i]);
+			BEAUTI1_COLOR; printf(" ] \n"); DEF_COLOR;
 		}
 		else printf("\n\t\t\t      %s \n", menu_num[i]);
 	}
@@ -343,10 +377,9 @@ void menuSelectB(int menu, int max, char *menu_num[MENU_NUM])
 	puts(" ");
 	for (int i = 0; i < max; i++){
 		if (menu == i + 1){
-			printf("\n\t\t\t     "); BEAUTI1_COLOR;
-			printf("[ "); BEAUTI2_COLOR;
-			printf("%s", menu_num[i]); BEAUTI1_COLOR;
-			printf(" ] \n"); DEF_COLOR;
+			BEAUTI1_COLOR; printf("\n\t\t\t     [ ");
+			BEAUTI2_COLOR; printf("%s", menu_num[i]);
+			BEAUTI1_COLOR; printf(" ] \n"); DEF_COLOR;
 		}
 		else printf("\n\t\t\t       %s \n", menu_num[i]);
 	}
@@ -358,10 +391,9 @@ void menuSelectC(int menu, int max, char *menu_num[MENU_NUM])
 	puts(" ");
 	for (int i = 0; i < max; i++){
 		if (menu == i + 1){
-			printf("\n\t\t\t        "); BEAUTI1_COLOR;
-			printf("[ "); BEAUTI2_COLOR;
-			printf("%s", menu_num[i]); BEAUTI1_COLOR;
-			printf(" ] \n"); DEF_COLOR;
+			BEAUTI1_COLOR; printf("\n\t\t\t        [ ");
+			BEAUTI2_COLOR; printf("%s", menu_num[i]);
+			BEAUTI1_COLOR; printf(" ] \n"); DEF_COLOR;
 		}
 		else printf("\n\t\t\t          %s \n", menu_num[i]);
 	}
@@ -612,13 +644,13 @@ void modifyUser(UserInfo userInfo[], int fix)
 void dataInputA(UserInfo userInfo[])
 {
 	int input, warning = 0, action = 1, switC = 1, switD = 1;
-	int *ptrC;
-	ptrC = &switC;
+	int *ptrC = &switC;
 
 	while (1) {
 		topMessage("입력", "Regist");
 
-		printf("\n\n\n\n\t\t\t 회원ID\t: %d \n\n", userInfo[count].userId);
+		printf("\n\n\n\n\t\t\t 회원ID\t: "); BEAUTI3_COLOR;
+		printf("%d \n\n", userInfo[count].userId); DEF_COLOR;
 
 		if (switD == 1){
 			for (int i = 0; i < NAME_PHONE_BUFFER; i++)
@@ -634,29 +666,43 @@ void dataInputA(UserInfo userInfo[])
 		}
 
 		if (switD == 1 && action){
-			printf("\t\t\t 이름\t: ");
+			BEAUTI2_COLOR; printf("\t\t\t 이름\t: "); BEAUTI1_COLOR;
 			switC = NAME;
 			warning = dataInputAction(warning, NAME, ptrC, userInfo[count].userName, 4, 8);
-			if (!warning) switD = 2;
+			if (!warning){
+				switD = 2; continue;
+			}
 		}
-		else if (switD >= 1) printf("\t\t\t 이름\t: %s \n", userInfo[count].userName);
+		else if (switD >= 1){
+			printf("\t\t\t 이름\t: "); BEAUTI3_COLOR;
+			printf("%s \n", userInfo[count].userName); DEF_COLOR;
+		}
 
-		if (switD == 2 && action){
-			printf("\t\t\t 연락처\t: ");
+		if (switD == 2 && action){;
+			BEAUTI2_COLOR; printf("\t\t\t 연락처\t: "); BEAUTI1_COLOR;
 			switC = PHONE;
-			warning = dataInputAction(warning, PHONE, ptrC, userInfo[count].handphone, 12, 13);
-			if (!warning) switD = 3;
+			warning = dataInputAction(warning, PHONE, ptrC, userInfo[count].handphone, 11, 13);
+			if (!warning){
+				switD = 3; continue;
+			}
 		}
-		else if (switD >= 2) printf("\t\t\t 연락처\t: %s \n", userInfo[count].handphone);
+		else if (switD >= 2){
+			printf("\t\t\t 연락처\t: "); BEAUTI3_COLOR;
+			printf("%s \n", userInfo[count].handphone); DEF_COLOR;
+		}
 
 		if (switD == 3 && action){
-			printf("\t\t\t 주소\t: ");
+			BEAUTI2_COLOR; printf("\t\t\t 주소\t: "); BEAUTI1_COLOR;
 			switC = ADDRESS;
 			warning = dataInputAction(warning, ADDRESS, ptrC, userInfo[count].userAddress, 10, 30);
-			if (!warning) switD = 4;
+			if (!warning){
+				switD = 4; continue;
+			}
 		}
-		else if (switD >= 3) printf("\t\t\t 주소\t: %s \n", userInfo[count].userAddress);
-
+		else if (switD >= 3){
+			printf("\t\t\t 주소\t: "); BEAUTI3_COLOR;
+			printf("%s \n", userInfo[count].userAddress); DEF_COLOR;
+		}
 
 		if (warning){
 			dataInputWarning((char*)0, INSERT, 0, switC);
@@ -801,7 +847,7 @@ int dataInputAction(int warning, int switB, int *ptrC, char *temp, int min, int 
 			/* '-'이외에는 숫자를 입력했는지 검사 */
 			if (switB == PHONE){
 				if ((temp[i] < '0' || temp[i] > '9') &&
-					(temp[i] != '-' || (i != 3 && i != 7 && i != 8))){
+					(temp[i] != '-' || (i != 2 && i != 3 && i != 6 && i != 7 && i != 8))){
 					warning = 1;
 					break;
 				}
@@ -812,11 +858,18 @@ int dataInputAction(int warning, int switB, int *ptrC, char *temp, int min, int 
 
 	if (!warning){
 		/* '-'의 위치가 적절한지 검사 */
-		if (switB == PHONE && (temp[3] != '-' || temp[7] != '-' &&
-			temp[8] != '-' || temp[7] == '-' && temp[8] == '-'))
-			warning = 1;
-		else
-			warning = 0;
+		if (switB == PHONE){
+			if (temp[2] == '-'){
+				if (temp[3] == '-' || temp[6] != '-' && temp[7] != '-' || temp[6] == '-' && temp[7] == '-')
+					warning = 1;
+			}
+			else if (temp[3] == '-'){
+				if (temp[7] != '-' && temp[8] != '-' || temp[7] == '-' && temp[8] == '-')
+					warning = 1;
+			}
+			else warning = 1;
+		}
+		else warning = 0;
 	}
 	return warning;
 }
@@ -830,17 +883,30 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 				temp[i] = 0;
 		}
 		else puts("\n");
-		puts("\n\n\t\t\t 이름이 너무 길거나 짧습니다.");
-		puts("\t\t\t 이름은 2 ~ 4 글자만 가능합니다. \n\t\t\t [ 영문 4 ~ 8 글자 ]\n\n");
+
+		BEAUTI1_COLOR; printf("\n\t\t       ┌────────────────┐\n\t\t       │");
+		BEAUTI4_COLOR; printf(" 이름이 너무 길거나 짧습니다.   ");
+		BEAUTI1_COLOR; printf("│ \n\t\t       │");
+		BEAUTI4_COLOR; printf(" 이름은 2 ~ 4 글자만 가능합니다.");
+		BEAUTI1_COLOR; printf("│ \n\t\t       │");
+		BEAUTI5_COLOR; printf(" [ 영문 : 4 ~ 8 글자 ]          ");
+		BEAUTI1_COLOR; printf("│ \n\t\t       └────────────────┘\n\n");
+
 		break;
 	case ADDRESS:
 		if (switA == MODIFY){
 			for (int i = 0; i < ADDRESS_BUFFER; i++)
 				temp[i] = 0;
 		}
-		puts("\n\t\t  주소가 너무 길거나 짧습니다. ");
-		puts("\t\t  최소 5글자 이상, 그리고 15글자 이내로 입력해주세요.");
-		puts("\n\t\t  [ 영문 : 10 ~ 30글자 (공백 포함) ]\n\n");
+
+		BEAUTI1_COLOR; printf("\n\t\t       ┌────────────────┐\n\t\t       │");
+		BEAUTI4_COLOR; printf(" 주소가 너무 길거나 짧습니다.   ");
+		BEAUTI1_COLOR; printf("│ \n\t\t       │");
+		BEAUTI4_COLOR; printf(" 5 ~ 15글자 이내로 입력해주세요.");
+		BEAUTI1_COLOR; printf("│ \n\t\t       │");
+		BEAUTI5_COLOR; printf(" [ 영문: 10~30글자 (공백 포함) ]");
+		BEAUTI1_COLOR; printf("│ \n\t\t       └────────────────┘\n\n");
+
 		break;
 	case PHONE:
 		if (switA == MODIFY){
@@ -848,8 +914,15 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 				temp[i] = 0;
 		}
 		else puts(" ");
-		puts("\n\t\t\t 연락처 형식에 맞지 않습니다. ");
-		puts("\t\t\t 형식에 맞게 입력해주세요. \n\n\t\t     [ 예) 010-1234-5678  or  031-123-4567 ]\n\n");
+
+		BEAUTI1_COLOR; printf("\n\t\t    ┌────────────────────┐\n\t\t    │");
+		BEAUTI4_COLOR; printf(" 연락처 형식에 맞지 않습니다.           ");
+		BEAUTI1_COLOR; printf("│ \n\t\t    │");
+		BEAUTI4_COLOR; printf(" 형식에 맞게 입력해주세요.              ");
+		BEAUTI1_COLOR; printf("│ \n\t\t    │");
+		BEAUTI5_COLOR; printf(" [ 예) 010-1234-5678  or  031-123-4567 ]");
+		BEAUTI1_COLOR; printf("│ \n\t\t    └────────────────────┘\n\n");
+
 		break;
 	case TAB:
 		if (switA == MODIFY){
@@ -862,7 +935,14 @@ void dataInputWarning(char *temp, int switA, int switB, int switC)
 					temp[i] = 0;
 			}
 		}
-		puts("\n\n\n\t\t\t 탭(Tab)은 입력할 수 없습니다!\n\n\n");
+
+		BEAUTI1_COLOR; printf("\n\t\t       ┌────────────────┐\n\t\t       │");
+		BEAUTI4_COLOR; printf(" \t\t\t\t ");
+		BEAUTI1_COLOR; printf("│ \n\t\t       │");
+		BEAUTI4_COLOR; printf(" 탭(Tab)은 입력할 수 없습니다!  ");
+		BEAUTI1_COLOR; printf("│ \n\t\t       │");
+		BEAUTI4_COLOR; printf(" \t\t\t\t ");
+		BEAUTI1_COLOR; printf("│ \n\t\t       └────────────────┘\n\n");
 		break;
 	}
 	bottomMessageA();
@@ -1043,8 +1123,9 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 	while (1) {
 		topMessage("검색", "Search");
 
-		puts("\n\t\t\t      ◎  검색  결과  ◎");
-		puts("\t\t\t       ================");
+		BEAUTI2_COLOR; puts("\n\t\t\t      ◎  검색  결과  ◎");
+		BEAUTI1_COLOR; puts("\t\t\t       ================");
+		DEF_COLOR;
 
 		for (int i = 1; i <= num; i++){
 			printf("   %2d.  %d \t %s   \t%s  \t%s\n", i,
@@ -1056,6 +1137,7 @@ int searchManyPrint(UserInfo userInfo[], int overlap[], int num)
 			puts(" ");	//공백 채우기
 
 		if (num + 1 == OVERLAP_BUFFER){
+			BEAUTI2_COLOR;
 			puts("\n\t\t  검색 결과가 더 있으나 여기까지만 출력됩니다. ");
 			puts("\t\t원하시는 결과가 없으면 다른 방법으로 검색해주세요.\n");
 		}
@@ -1179,9 +1261,17 @@ int closeProgram(void)
 		printf("\t\t\t    "); BOX_COLOR;
 		printf("└──────────┘\n"); DEF_COLOR;
 
-		if (menu == 1) puts("\n\n\t\t\t        [ 저장 후 종료 ]");
+		if (menu == 1){
+			BEAUTI1_COLOR; printf("\n\n\t\t\t        [ ");
+			BEAUTI2_COLOR; printf("저장 후 종료");
+			BEAUTI1_COLOR; printf(" ] \n"); DEF_COLOR;
+		}
 		else puts("\n\n\t\t\t          저장 후 종료 ");
-		if (menu == 2) puts("\n\t\t\t     [ 저장하지 않고 종료 ] \n\n\n\n");
+		if (menu == 2){
+			BEAUTI1_COLOR; printf("\n\t\t\t     [ ");
+			BEAUTI2_COLOR; printf("저장하지 않고 종료");
+			BEAUTI1_COLOR; printf(" ] \n\n\n\n\n"); DEF_COLOR;
+		}
 		else puts("\n\t\t\t       저장하지 않고 종료 \n\n\n\n");
 
 		bottomMessageC();
@@ -1214,9 +1304,25 @@ int closeProgram(void)
 	}
 }
 
-void closeGift(void)
+
+void startSound(void)
 {
-	Beep(SOL, 400);
+	Sleep(DURATION * 6);
+	Beep(DO, DURATION * 3);
+	Beep(MI, DURATION * 3);
+	Beep(SOL, DURATION * 3);
+	Beep(_DO, DURATION * 6);
+}
+
+void closeSound(void)
+{
+	Sleep(DURATION * 8);
+	Beep(_DO, DURATION * 4);
+	Beep(SOL, DURATION * 4);
+	Beep(MI, DURATION * 4);
+	Beep(DO, DURATION * 8);
+	
+	/*Beep(SOL, 400);
 	Beep(SOL, 100);
 	Beep(RA, 400);
 	Beep(RA, 100);
@@ -1251,7 +1357,7 @@ void closeGift(void)
 	Beep(MI, 90);
 	Beep(SOL, 90);
 	Beep(_DO, 120);
-	Sleep(300);
+	Sleep(300);*/
 }
 
 void inSound(void)
